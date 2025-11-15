@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase, type Tournament, type Team } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
-import { Trophy, Save, TrendingUp } from 'lucide-react';
+import { Trophy, Save, TrendingUp, CheckCircle } from 'lucide-react'; // Adăugăm CheckCircle
 
 export default function PickemsView() {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
@@ -126,6 +126,8 @@ export default function PickemsView() {
   );
 }
 
+const MAX_QUALIFIERS_PER_GROUP = 2; // Numărul maxim de echipe care se califică per grupă
+
 function GroupStagePickems({
   tournament,
   picks,
@@ -136,53 +138,75 @@ function GroupStagePickems({
   onPicksChange: (picks: any) => void;
 }) {
   const teams = tournament.teams || [];
-  const groups = ['A', 'B', 'C', 'D'];
+  const groups = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']; // Extindem grupele la 8
 
-  function handleRankChange(group: string, teamId: string, rank: number) {
-    const newPicks = { ...picks };
-    if (!newPicks[group]) {
-      newPicks[group] = {};
+  function handleQualifierToggle(group: string, teamId: string) {
+    const currentGroupPicks = picks[group] || [];
+    let newGroupPicks: string[];
+
+    if (currentGroupPicks.includes(teamId)) {
+      // Dacă echipa este deja selectată, o deselectăm
+      newGroupPicks = currentGroupPicks.filter((id: string) => id !== teamId);
+    } else {
+      // Dacă echipa nu este selectată
+      if (currentGroupPicks.length < MAX_QUALIFIERS_PER_GROUP) {
+        // O adăugăm dacă nu am atins limita de calificări
+        newGroupPicks = [...currentGroupPicks, teamId];
+      } else {
+        // Altfel, notificăm utilizatorul că a atins limita
+        alert(`Poți selecta maxim ${MAX_QUALIFIERS_PER_GROUP} echipe per grupă.`);
+        return;
+      }
     }
-    newPicks[group][teamId] = rank;
-    onPicksChange(newPicks);
+
+    onPicksChange({
+      ...picks,
+      [group]: newGroupPicks,
+    });
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"> {/* Layout mai flexibil */}
       {groups.map((group) => {
         const groupTeams = teams.filter((team: Team) => team.group === group);
+        const selectedCount = (picks[group] || []).length;
+
+        if (groupTeams.length === 0) return null; // Nu afișăm grupele fără echipe
+
         return (
           <div key={group} className="bg-slate-800 rounded-xl p-6 border border-slate-700">
-            <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
-              <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-                {group}
+            <h2 className="text-2xl font-bold text-white mb-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-xl font-bold">
+                  {group}
+                </div>
+                Group {group}
               </div>
-              Group {group}
+              <span className="text-slate-400 text-sm">
+                {selectedCount}/{MAX_QUALIFIERS_PER_GROUP} selected
+              </span>
             </h2>
             <div className="space-y-3">
               {groupTeams.map((team: Team) => (
                 <div
                   key={team.id}
-                  className="bg-slate-700 p-4 rounded-lg flex items-center justify-between hover:bg-slate-600 transition-colors"
+                  className={`p-4 rounded-lg flex items-center justify-between cursor-pointer transition-colors duration-200 ${
+                    (picks[group] || []).includes(team.id)
+                      ? 'bg-green-800/40 border border-green-500'
+                      : 'bg-slate-700 hover:bg-slate-600'
+                  }`}
+                  onClick={() => handleQualifierToggle(group, team.id)}
                 >
                   <div className="flex items-center gap-3">
-                    <span className="text-3xl">{team.logo || '❓'}</span> {/* Fallback for missing logo */}
+                    <span className="text-3xl">{team.logo || '❓'}</span>
                     <div>
                       <h3 className="text-white font-semibold">{team.name}</h3>
-                      <p className="text-slate-400 text-sm">{team.region || 'N/A'}</p> {/* Fallback for missing region */}
+                      <p className="text-slate-400 text-sm">{team.region || 'N/A'}</p>
                     </div>
                   </div>
-                  <select
-                    value={picks[group]?.[team.id] || ''}
-                    onChange={(e) => handleRankChange(group, team.id, parseInt(e.target.value))}
-                    className="px-4 py-2 bg-slate-600 border border-slate-500 rounded-lg text-white"
-                  >
-                    <option value="">Rank</option>
-                    <option value="1">1st</option>
-                    <option value="2">2nd</option>
-                    <option value="3">3rd</option>
-                    <option value="4">4th</option>
-                  </select>
+                  {(picks[group] || []).includes(team.id) && (
+                    <CheckCircle className="w-6 h-6 text-green-400" />
+                  )}
                 </div>
               ))}
             </div>
