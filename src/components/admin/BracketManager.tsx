@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase, type Tournament, type Team } from '../../lib/supabase';
 import { Save, Trophy, ArrowRight } from 'lucide-react';
 
@@ -22,18 +22,36 @@ interface BracketManagerProps {
 
 export default function BracketManager({ tournament, onRefresh, qualifiedTeams }: BracketManagerProps) {
   const [bracket, setBracket] = useState<BracketMatch[]>((tournament.bracket_data as any)?.matches || []);
-  const allTeams = tournament.teams || []; // Keep allTeams for the "Available Teams" display
+
+  // Reset bracket state if tournament or qualifiedTeams change
+  useEffect(() => {
+    setBracket((tournament.bracket_data as any)?.matches || []);
+  }, [tournament.id, qualifiedTeams]); // Depend on tournament.id and qualifiedTeams
 
   function initializeBracket() {
+    if (qualifiedTeams.length === 0) {
+      alert('No qualified teams available to initialize the bracket. Please ensure group stage matches are completed and teams are assigned to groups.');
+      return;
+    }
+
     const newBracket: BracketMatch[] = [];
+    const numQualifiedTeams = qualifiedTeams.length;
 
-    const rounds = [
-      { name: 'quarterfinals', matches: 4 },
-      { name: 'semifinals', matches: 2 },
-      { name: 'finals', matches: 1 }
-    ];
+    const roundsConfig = [];
+    if (numQualifiedTeams > 8) { // For 9-16 teams, start with Round of 16
+      roundsConfig.push({ name: 'round_of_16', matches: 8 });
+    }
+    if (numQualifiedTeams > 4) { // For 5-8 teams, start with Quarterfinals
+      roundsConfig.push({ name: 'quarterfinals', matches: 4 });
+    }
+    if (numQualifiedTeams > 2) { // For 3-4 teams, start with Semifinals
+      roundsConfig.push({ name: 'semifinals', matches: 2 });
+    }
+    if (numQualifiedTeams > 0) { // For 1-2 teams, only Finals
+      roundsConfig.push({ name: 'finals', matches: 1 });
+    }
 
-    rounds.forEach((round) => {
+    roundsConfig.forEach((round) => {
       for (let i = 0; i < round.matches; i++) {
         newBracket.push({
           id: `${round.name}_${i}`,
@@ -56,6 +74,8 @@ export default function BracketManager({ tournament, onRefresh, qualifiedTeams }
           updated.winner_id = updated.team1_id;
         } else if (updated.team2_score > updated.team1_score && updated.team2_id) {
           updated.winner_id = updated.team2_id;
+        } else {
+          updated.winner_id = undefined; // Clear winner if scores are equal or invalid
         }
         return updated;
       }
@@ -79,9 +99,10 @@ export default function BracketManager({ tournament, onRefresh, qualifiedTeams }
     }
   }
 
+  // This getTeamById should now use tournament.teams to resolve team details
   function getTeamById(id?: string) {
     if (!id) return null;
-    return allTeams.find((t: Team) => t.id === id);
+    return tournament.teams?.find((t: Team) => t.id === id);
   }
 
   function getRoundMatches(roundName: string) {
@@ -90,12 +111,20 @@ export default function BracketManager({ tournament, onRefresh, qualifiedTeams }
 
   function getRoundName(round: string) {
     switch (round) {
+      case 'round_of_16': return 'Round of 16';
       case 'quarterfinals': return 'Quarter Finals';
       case 'semifinals': return 'Semi Finals';
       case 'finals': return 'Finals';
       default: return round;
     }
   }
+
+  const roundsToDisplay = [];
+  if (qualifiedTeams.length > 8) roundsToDisplay.push('round_of_16');
+  if (qualifiedTeams.length > 4) roundsToDisplay.push('quarterfinals');
+  if (qualifiedTeams.length > 2) roundsToDisplay.push('semifinals');
+  if (qualifiedTeams.length > 0) roundsToDisplay.push('finals');
+
 
   return (
     <div className="space-y-6">
@@ -111,7 +140,7 @@ export default function BracketManager({ tournament, onRefresh, qualifiedTeams }
                 onClick={initializeBracket}
                 className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition-colors"
               >
-                Initialize Bracket
+                Initialize Bracket ({qualifiedTeams.length} teams)
               </button>
             )}
             <button
@@ -127,12 +156,15 @@ export default function BracketManager({ tournament, onRefresh, qualifiedTeams }
         {bracket.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-slate-400 text-lg mb-4">No bracket created yet.</p>
-            <p className="text-slate-500 text-sm">Click "Initialize Bracket" to create the playoff structure.</p>
+            <p className="text-slate-500 text-sm">Click "Initialize Bracket" to create the playoff structure based on {qualifiedTeams.length} qualified teams.</p>
+            {qualifiedTeams.length === 0 && (
+              <p className="text-red-400 text-sm mt-2">No qualified teams found. Please ensure teams are assigned to groups and group matches are completed.</p>
+            )}
           </div>
         ) : (
           <div className="overflow-x-auto">
             <div className="flex gap-8 min-w-max">
-              {['quarterfinals', 'semifinals', 'finals'].map((round) => {
+              {roundsToDisplay.map((round) => { // Use roundsToDisplay for rendering
                 const roundMatches = getRoundMatches(round);
                 if (roundMatches.length === 0) return null;
 
@@ -161,21 +193,22 @@ export default function BracketManager({ tournament, onRefresh, qualifiedTeams }
       </div>
 
       <div className="bg-slate-800 rounded-xl p-6 border border-slate-700">
-        <h3 className="text-xl font-bold text-white mb-4">Available Teams (All Tournament Teams)</h3>
+        <h3 className="text-xl font-bold text-white mb-4">Qualified Teams ({qualifiedTeams.length})</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-          {allTeams.map((team: Team) => (
-            <div key={team.id} className="bg-slate-700 p-3 rounded-lg flex items-center gap-2">
-              <span className="text-2xl">{team.logo}</span>
-              <div>
-                <div className="text-white font-medium text-sm">{team.name}</div>
-                <div className="text-slate-400 text-xs">{team.region || 'N/A'}</div>
+          {qualifiedTeams.length === 0 ? (
+            <p className="text-slate-400 col-span-full">No teams have qualified yet. Complete group stage matches to see qualified teams.</p>
+          ) : (
+            qualifiedTeams.map((team: Team) => (
+              <div key={team.id} className="bg-slate-700 p-3 rounded-lg flex items-center gap-2">
+                <span className="text-2xl">{team.logo}</span>
+                <div>
+                  <div className="text-white font-medium text-sm">{team.name}</div>
+                  <div className="text-slate-400 text-xs">{team.region || 'N/A'}</div>
+                </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
-        {allTeams.length === 0 && (
-          <p className="text-slate-400">No teams available. Add teams first in the Teams tab.</p>
-        )}
       </div>
     </div>
   );
