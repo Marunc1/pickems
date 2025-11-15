@@ -7,7 +7,7 @@ function AdminDashboard() {
   const location = useLocation();
 
   if (loading) {
-    return <div className="text-white text-center py-12">Se încarcă setările de admin...</div>;
+    return <div className="text-white text-center py-12 text-xl">Se încarcă setările de admin...</div>;
   }
 
   if (!user || !isAdmin) {
