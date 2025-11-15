@@ -52,7 +52,7 @@ export default function ViewerBracketMatchCard({ match, teams, userPick, onPick,
           onClick={() => isTeam1Selectable && handlePick(match.team1_id!)}
         >
           <div className="flex items-center gap-2">
-            {team1?.logo ? <span className="text-xl">{team1.logo}</span> : <HelpCircle className="w-5 h-5 text-red-400" />}
+            {team1?.logo ? <span className="text-xl">{team1.logo}</span> : <div className="w-5 h-5"></div>} {/* Removed HelpCircle */}
             <h3 className="text-white font-semibold text-sm">{team1?.name || 'TBD'}</h3>
           </div>
           {isTeam1Picked && <CheckCircle className="w-4 h-4 text-blue-400" />}
@@ -69,7 +69,7 @@ export default function ViewerBracketMatchCard({ match, teams, userPick, onPick,
           onClick={() => isTeam2Selectable && handlePick(match.team2_id!)}
         >
           <div className="flex items-center gap-2">
-            {team2?.logo ? <span className="text-xl">{team2.logo}</span> : <HelpCircle className="w-5 h-5 text-red-400" />}
+            {team2?.logo ? <span className="text-xl">{team2.logo}</span> : <div className="w-5 h-5"></div>} {/* Removed HelpCircle */}
             <h3 className="text-white font-semibold text-sm">{team2?.name || 'TBD'}</h3>
           </div>
           {isTeam2Picked && <CheckCircle className="w-4 h-4 text-blue-400" />}
