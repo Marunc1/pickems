@@ -39,7 +39,7 @@ export default function ViewerBracketMatchCard({ match, teams, userPick, onPick,
   const isTeam2Selectable = !!match.team2_id;
 
   return (
-    <div className="bg-slate-800 rounded-lg p-4 w-56 border border-slate-700 shadow-md"> {/* Changed w-64 to w-56 */}
+    <div className="bg-slate-800 rounded-lg p-4 w-40 border border-slate-700 shadow-md"> {/* Changed w-56 to w-40 */}
       <div className="text-slate-400 text-xs font-semibold mb-3 text-center">
         Match {match.match_number}
       </div>
