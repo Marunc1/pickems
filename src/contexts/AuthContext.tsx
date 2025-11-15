@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import type { User } from '@supabase/supabase-js';
+import type { User, Session } from '@supabase/supabase-js'; // Import Session type
 
 // --- Definirea Tipului Contextului ---
 interface AuthContextType {
@@ -55,40 +55,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Stocăm username-ul local în timpul sign-up-ului pentru a-l folosi la prima logare
   const [tempUsername, setTempUsername] = useState<string | null>(null); 
 
-  useEffect(() => {
-    // Verificarea inițială a sesiunii
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        checkAdminStatus(session.user.id);
-      } else {
-        setLoading(false);
-      }
-    });
-
-    // Abonarea la schimbările de stare
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      (async () => {
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          // Asigură-te că profilul este creat la fiecare logare (dacă lipsește)
-          // Notă: La prima logare, ar trebui să avem username-ul stocat (sau îl extragem din metadate/email).
-          // Aici folosim o valoare generică dacă username-ul nu e disponibil direct.
-          const usernameToUse = tempUsername || session.user.email?.split('@')[0] || 'NouUtilizator';
-          
-          await ensureUserProfile(session.user.id, usernameToUse);
-          await checkAdminStatus(session.user.id);
-          
-        } else {
-          setIsAdmin(false);
-          setLoading(false);
-        }
-      })();
-    });
-
-    return () => subscription.unsubscribe();
-  }, [tempUsername]);
-
+  // Funcție pentru a verifica și seta starea de admin
   async function checkAdminStatus(userId: string) {
     try {
       const { data, error } = await supabase
@@ -103,9 +70,56 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error('Error checking admin status:', error);
       setIsAdmin(false);
     } finally {
-      setLoading(false);
+      setLoading(false); // Asigură-te că loading este setat la false
     }
   }
+
+  // Funcție unificată pentru a gestiona sesiunea utilizatorului și logica profilului
+  const handleSession = async (session: Session | null) => {
+    setUser(session?.user ?? null);
+    if (session?.user) {
+      const usernameToUse = tempUsername || session.user.email?.split('@')[0] || 'NouUtilizator';
+      try {
+        await ensureUserProfile(session.user.id, usernameToUse);
+        await checkAdminStatus(session.user.id); // checkAdminStatus sets loading to false
+      } catch (error) {
+        console.error("Error during session handling:", error);
+        setIsAdmin(false);
+        setLoading(false); // Asigură-te că loading este false chiar și la eroare
+      }
+    } else {
+      setIsAdmin(false);
+      setLoading(false); // Nu există utilizator, deci încărcarea este finalizată
+    }
+  };
+
+  useEffect(() => {
+    let isMounted = true; // Flag pentru a preveni actualizările de stare pe componente demontate
+
+    // Verificarea inițială a sesiunii
+    supabase.auth.getSession().then(async ({ data }) => {
+      if (isMounted) {
+        await handleSession(data.session);
+      }
+    }).catch(error => {
+      if (isMounted) {
+        console.error("Error fetching initial session:", error);
+        setLoading(false); // Asigură-te că loading este false la eroare inițială
+      }
+    });
+
+    // Abonarea la schimbările de stare
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (isMounted) {
+        handleSession(session); // Folosește același handler pentru schimbările de stare
+      }
+    });
+
+    return () => {
+      isMounted = false; // Curățare
+      subscription.unsubscribe();
+    };
+  }, [tempUsername]); // tempUsername este o dependență
 
   async function signIn(email: string, password: string) {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
