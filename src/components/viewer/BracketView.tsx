@@ -83,6 +83,38 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
   const hasFinals = bracketMatches.some(m => m.round === 'finals');
   const hasThirdPlace = bracketMatches.some(m => m.round === 'third_place');
 
+  // New function to render a column of connectors
+  const renderConnectorColumn = (roundIndex: number, isLeftBranch: boolean, numMatchesInPreviousRound: number) => {
+    if (numMatchesInPreviousRound === 0) return null;
+
+    const numSegments = numMatchesInPreviousRound / 2;
+    const segments = [];
+    for (let i = 0; i < numSegments; i++) {
+      segments.push(
+        <BracketRoundConnector
+          key={i}
+          isLeftBranch={isLeftBranch}
+          slotHeight={slotHeight}
+        />
+      );
+    }
+
+    let connectorColumnMarginTop = 0;
+    if (roundIndex === 0) { // R16 -> QF
+      connectorColumnMarginTop = slotHeight / 2; // Aligns with the top of the QF match column
+    } else if (roundIndex === 1) { // QF -> SF
+      connectorColumnMarginTop = slotHeight * 1.5; // Aligns with the top of the SF match column
+    } else if (roundIndex === 2) { // SF -> Finals
+      connectorColumnMarginTop = slotHeight * 2.5; // Aligns with the top of the Finals match column
+    }
+
+    return (
+      <div className={`flex flex-col items-center`} style={{ marginTop: `${connectorColumnMarginTop}px` }}>
+        {segments}
+      </div>
+    );
+  };
+
   return (
     <div className="overflow-x-auto pb-4">
       <div className="flex justify-start min-w-max p-4 gap-x-16"> {/* Increased gap-x for connectors */}
@@ -108,12 +140,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
           </div>
         )}
         {hasR16 && hasQF && r16Matches.left.length > 0 && qfMatches.left.length > 0 && (
-          <BracketRoundConnector
-            roundIndex={0}
-            isLeftBranch={true}
-            numMatchesInPreviousRound={r16Matches.left.length}
-            slotHeight={slotHeight}
-          />
+          renderConnectorColumn(0, true, r16Matches.left.length)
         )}
 
         {hasQF && qfMatches.left.length > 0 && (
@@ -136,12 +163,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
           </div>
         )}
         {hasQF && hasSF && qfMatches.left.length > 0 && sfMatches.left.length > 0 && (
-          <BracketRoundConnector
-            roundIndex={1}
-            isLeftBranch={true}
-            numMatchesInPreviousRound={qfMatches.left.length}
-            slotHeight={slotHeight}
-          />
+          renderConnectorColumn(1, true, qfMatches.left.length)
         )}
 
         {hasSF && sfMatches.left.length > 0 && (
@@ -164,12 +186,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
           </div>
         )}
         {hasSF && hasFinals && sfMatches.left.length > 0 && finalsMatches.length > 0 && (
-          <BracketRoundConnector
-            roundIndex={2}
-            isLeftBranch={true}
-            numMatchesInPreviousRound={sfMatches.left.length}
-            slotHeight={slotHeight}
-          />
+          renderConnectorColumn(2, true, sfMatches.left.length)
         )}
 
         {/* Middle (Finals) */}
@@ -194,12 +211,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
         )}
 
         {hasSF && hasFinals && sfMatches.right.length > 0 && finalsMatches.length > 0 && (
-          <BracketRoundConnector
-            roundIndex={2}
-            isLeftBranch={false} // Right branch
-            numMatchesInPreviousRound={sfMatches.right.length}
-            slotHeight={slotHeight}
-          />
+          renderConnectorColumn(2, false, sfMatches.right.length)
         )}
         {/* Right Side Rounds (SF, QF, R16) */}
         {hasSF && sfMatches.right.length > 0 && (
@@ -222,12 +234,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
           </div>
         )}
         {hasQF && hasSF && qfMatches.right.length > 0 && sfMatches.right.length > 0 && (
-          <BracketRoundConnector
-            roundIndex={1}
-            isLeftBranch={false} // Right branch
-            numMatchesInPreviousRound={qfMatches.right.length}
-            slotHeight={slotHeight}
-          />
+          renderConnectorColumn(1, false, qfMatches.right.length)
         )}
         {hasQF && qfMatches.right.length > 0 && (
           <div className={`flex flex-col items-center ${getColumnMarginTop('quarterfinals')}`}>
@@ -249,12 +256,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
           </div>
         )}
         {hasR16 && hasQF && r16Matches.right.length > 0 && qfMatches.right.length > 0 && (
-          <BracketRoundConnector
-            roundIndex={0}
-            isLeftBranch={false} // Right branch
-            numMatchesInPreviousRound={r16Matches.right.length}
-            slotHeight={slotHeight}
-          />
+          renderConnectorColumn(0, false, r16Matches.right.length)
         )}
         {hasR16 && r16Matches.right.length > 0 && (
           <div className={`flex flex-col items-center ${getColumnMarginTop('round_of_16')}`}>
