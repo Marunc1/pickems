@@ -17,9 +17,11 @@ interface ViewerBracketMatchCardProps {
   userPick?: string; // The team ID picked by the user for this match
   onPick: (pickedTeamId: string) => void;
   getTeamById: (id?: string) => Team | null;
+  isLeftBranch?: boolean; // New prop to determine if it's on the left or right side
+  isFinalMatch?: boolean; // New prop to determine if it's the final match (no outgoing lines)
 }
 
-export default function ViewerBracketMatchCard({ match, teams, userPick, onPick, getTeamById }: ViewerBracketMatchCardProps) {
+export default function ViewerBracketMatchCard({ match, teams, userPick, onPick, getTeamById, isLeftBranch = true, isFinalMatch = false }: ViewerBracketMatchCardProps) {
   const team1 = getTeamById(match.team1_id);
   const team2 = getTeamById(match.team2_id);
 
@@ -38,10 +40,15 @@ export default function ViewerBracketMatchCard({ match, teams, userPick, onPick,
   const isTeam1Selectable = !!match.team1_id;
   const isTeam2Selectable = !!match.team2_id;
 
-  return (
-    <div className="bg-slate-800 rounded-lg p-4 w-40 h-[180px] border border-slate-700 shadow-md flex flex-col justify-between">
-      {/* Removed the match number display */}
+  const cardClasses = `bg-slate-800 rounded-lg p-4 w-40 h-[180px] border border-slate-700 shadow-md flex flex-col justify-between relative`;
 
+  // Add border-right for left branch, border-left for right branch, unless it's the final match
+  const lineClasses = !isFinalMatch
+    ? (isLeftBranch ? 'border-r-2 border-slate-600' : 'border-l-2 border-slate-600')
+    : '';
+
+  return (
+    <div className={`${cardClasses} ${lineClasses}`}>
       <div className="space-y-2 flex-grow">
         <div
           className={`flex items-center justify-between p-2 rounded-md transition-colors duration-150 ${

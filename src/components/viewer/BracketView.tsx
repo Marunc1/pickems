@@ -1,6 +1,7 @@
 import React from 'react';
 import { type Tournament, type Team } from '../../lib/supabase';
 import ViewerBracketMatchCard from './ViewerBracketMatchCard';
+import BracketRoundConnector from './BracketRoundConnector'; // Import the new connector component
 
 interface BracketMatch {
   id: string;
@@ -20,6 +21,8 @@ interface BracketViewProps {
 export default function BracketView({ tournament, userPicks, onPicksChange }: BracketViewProps) {
   const bracketMatches: BracketMatch[] = (tournament.bracket_data as any)?.matches || [];
   const allTeams: Team[] = tournament.teams || [];
+
+  const slotHeight = 180 + 32; // Card height (180px) + space-y-8 (32px) = 212px
 
   function getTeamById(id?: string) {
     if (!id) return null;
@@ -42,14 +45,12 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
   }
 
   const getColumnMarginTop = (roundName: string) => {
-    // Card height is 180px, space-y-8 is 32px. Total slot height = 180 + 32 = 212px.
-    const slotHeight = 212; 
     switch (roundName) {
       case 'round_of_16': return 'mt-0';
-      case 'quarterfinals': return `mt-[${slotHeight / 2}px]`; // Half of a slot height
-      case 'semifinals': return `mt-[${slotHeight}px]`; // One full slot height
-      case 'finals': return `mt-[${slotHeight * 1.5}px]`; // One and a half slot heights
-      case 'third_place': return `mt-[${slotHeight * 1.5}px]`; // Same as finals for alignment
+      case 'quarterfinals': return `mt-[${slotHeight / 2}px]`; // 106px
+      case 'semifinals': return `mt-[${slotHeight * 1.5}px]`; // 318px
+      case 'finals': return `mt-[${slotHeight * 2.5}px]`; // 530px
+      case 'third_place': return `mt-[${slotHeight * 2.5}px]`; // 530px
       default: return 'mt-0';
     }
   };
@@ -84,7 +85,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
 
   return (
     <div className="overflow-x-auto pb-4">
-      <div className="flex justify-start min-w-max p-4 gap-x-2"> {/* Added gap-x-2 and removed mx-2 from inner divs */}
+      <div className="flex justify-start min-w-max p-4 gap-x-2">
 
         {/* Left Side Rounds (R16, QF, SF) */}
         {hasR16 && r16Matches.left.length > 0 && (
@@ -101,11 +102,21 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
                   userPick={userPicks[match.id]}
                   onPick={(pickedTeamId) => onPicksChange({ ...userPicks, [match.id]: pickedTeamId })}
                   getTeamById={getTeamById}
+                  isLeftBranch={true}
                 />
               ))}
             </div>
           </div>
         )}
+        {hasR16 && hasQF && r16Matches.left.length > 0 && qfMatches.left.length > 0 && (
+          <BracketRoundConnector
+            roundIndex={0}
+            isLeftBranch={true}
+            numMatchesInCurrentRound={r16Matches.left.length}
+            slotHeight={slotHeight}
+          />
+        )}
+
         {hasQF && qfMatches.left.length > 0 && (
           <div className={`flex flex-col items-center ${getColumnMarginTop('quarterfinals')}`}>
             <h3 className="text-xl font-bold text-white mb-6 text-center whitespace-nowrap">
@@ -120,11 +131,21 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
                   userPick={userPicks[match.id]}
                   onPick={(pickedTeamId) => onPicksChange({ ...userPicks, [match.id]: pickedTeamId })}
                   getTeamById={getTeamById}
+                  isLeftBranch={true}
                 />
               ))}
             </div>
           </div>
         )}
+        {hasQF && hasSF && qfMatches.left.length > 0 && sfMatches.left.length > 0 && (
+          <BracketRoundConnector
+            roundIndex={1}
+            isLeftBranch={true}
+            numMatchesInCurrentRound={qfMatches.left.length}
+            slotHeight={slotHeight}
+          />
+        )}
+
         {hasSF && sfMatches.left.length > 0 && (
           <div className={`flex flex-col items-center ${getColumnMarginTop('semifinals')}`}>
             <h3 className="text-xl font-bold text-white mb-6 text-center whitespace-nowrap">
@@ -139,10 +160,19 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
                   userPick={userPicks[match.id]}
                   onPick={(pickedTeamId) => onPicksChange({ ...userPicks, [match.id]: pickedTeamId })}
                   getTeamById={getTeamById}
+                  isLeftBranch={true}
                 />
               ))}
             </div>
           </div>
+        )}
+        {hasSF && hasFinals && sfMatches.left.length > 0 && finalsMatches.length > 0 && (
+          <BracketRoundConnector
+            roundIndex={2}
+            isLeftBranch={true}
+            numMatchesInCurrentRound={sfMatches.left.length}
+            slotHeight={slotHeight}
+          />
         )}
 
         {/* Middle (Finals) */}
@@ -160,12 +190,21 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
                   userPick={userPicks[match.id]}
                   onPick={(pickedTeamId) => onPicksChange({ ...userPicks, [match.id]: pickedTeamId })}
                   getTeamById={getTeamById}
+                  isFinalMatch={true} // No outgoing lines for the final match
                 />
               ))}
             </div>
           </div>
         )}
 
+        {hasSF && hasFinals && sfMatches.right.length > 0 && finalsMatches.length > 0 && (
+          <BracketRoundConnector
+            roundIndex={2}
+            isLeftBranch={false} // Right branch
+            numMatchesInCurrentRound={sfMatches.right.length}
+            slotHeight={slotHeight}
+          />
+        )}
         {/* Right Side Rounds (SF, QF, R16) */}
         {hasSF && sfMatches.right.length > 0 && (
           <div className={`flex flex-col items-center ${getColumnMarginTop('semifinals')}`}>
@@ -181,10 +220,19 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
                   userPick={userPicks[match.id]}
                   onPick={(pickedTeamId) => onPicksChange({ ...userPicks, [match.id]: pickedTeamId })}
                   getTeamById={getTeamById}
+                  isLeftBranch={false} // Right branch
                 />
               ))}
             </div>
           </div>
+        )}
+        {hasQF && hasSF && qfMatches.right.length > 0 && sfMatches.right.length > 0 && (
+          <BracketRoundConnector
+            roundIndex={1}
+            isLeftBranch={false} // Right branch
+            numMatchesInCurrentRound={qfMatches.right.length}
+            slotHeight={slotHeight}
+          />
         )}
         {hasQF && qfMatches.right.length > 0 && (
           <div className={`flex flex-col items-center ${getColumnMarginTop('quarterfinals')}`}>
@@ -200,10 +248,19 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
                   userPick={userPicks[match.id]}
                   onPick={(pickedTeamId) => onPicksChange({ ...userPicks, [match.id]: pickedTeamId })}
                   getTeamById={getTeamById}
+                  isLeftBranch={false} // Right branch
                 />
               ))}
             </div>
           </div>
+        )}
+        {hasR16 && hasQF && r16Matches.right.length > 0 && qfMatches.right.length > 0 && (
+          <BracketRoundConnector
+            roundIndex={0}
+            isLeftBranch={false} // Right branch
+            numMatchesInCurrentRound={r16Matches.right.length}
+            slotHeight={slotHeight}
+          />
         )}
         {hasR16 && r16Matches.right.length > 0 && (
           <div className={`flex flex-col items-center ${getColumnMarginTop('round_of_16')}`}>
@@ -219,6 +276,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
                   userPick={userPicks[match.id]}
                   onPick={(pickedTeamId) => onPicksChange({ ...userPicks, [match.id]: pickedTeamId })}
                   getTeamById={getTeamById}
+                  isLeftBranch={false} // Right branch
                 />
               ))}
             </div>
@@ -240,6 +298,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
                   userPick={userPicks[match.id]}
                   onPick={(pickedTeamId) => onPicksChange({ ...userPicks, [match.id]: pickedTeamId })}
                   getTeamById={getTeamById}
+                  isFinalMatch={true} // No outgoing lines for 3rd place match
                 />
               ))}
             </div>
