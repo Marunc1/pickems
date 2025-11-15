@@ -1,68 +1,31 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
+import { supabase, type UserData } from '../../lib/supabase';
 import { Trophy, TrendingUp, Medal } from 'lucide-react';
-
-// Reutilizarea funcției customApi din AuthProvider / AdminPanel
-const API_URL = '/api.php'; 
-
-async function customApi(action: string, data?: any): Promise<any> {
-    const isGet = data === undefined || action === 'load_leaderboard';
-    const method = isGet ? 'GET' : 'POST';
-    
-    let url = `${API_URL}?action=${action}`;
-    let body = undefined;
-
-    if (!isGet) {
-        body = JSON.stringify({ action, ...data });
-    } else if (action === 'load_leaderboard' && data) {
-        url += `&${new URLSearchParams(data).toString()}`;
-    }
-
-    const response = await fetch(url, {
-        method,
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: body,
-    });
-
-    const result = await response.json();
-
-    if (!response.ok || !result.success) {
-        throw new Error(result.error || `API Error for action ${action}`);
-    }
-    return result.data || result;
-}
-
-// Tipul UserData simplificat pentru Leaderboard
-interface UserData {
-    id: string; 
-    username: string;
-    score: number;
-    is_admin: boolean;
-}
 
 export default function Leaderboard() {
   const [users, setUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const loadLeaderboard = useCallback(async () => {
-    try {
-      // 🔄 Înlocuirea apelului Supabase: .from('user_data').select('*').order('score', { ascending: false }).limit(50)
-      const data = await customApi('load_leaderboard'); 
-      
-      // Presupunem că backend-ul PHP returnează deja datele sortate
-      setUsers(data as UserData[] || []);
+  useEffect(() => {
+    loadLeaderboard();
+  }, []);
 
+  async function loadLeaderboard() {
+    try {
+      const { data, error } = await supabase
+        .from('user_data')
+        .select('*')
+        .order('score', { ascending: false })
+        .limit(50);
+
+      if (error) throw error;
+      setUsers(data || []);
     } catch (error) {
       console.error('Error loading leaderboard:', error);
     } finally {
       setLoading(false);
     }
-  }, []);
-
-  useEffect(() => {
-    loadLeaderboard();
-  }, [loadLeaderboard]);
+  }
 
   function getRankIcon(index: number) {
     if (index === 0) return <Trophy className="w-6 h-6 text-yellow-500" />;
@@ -92,7 +55,7 @@ export default function Leaderboard() {
       </div>
 
       <div className="max-w-4xl mx-auto px-6 py-8">
-        <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden shadow-2xl">
+        <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-slate-900">
@@ -117,19 +80,19 @@ export default function Leaderboard() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold">
                           {user.username.charAt(0).toUpperCase()}
                         </div>
                         <div>
                           <div className="text-white font-semibold">{user.username}</div>
                           {user.is_admin && (
-                            <span className="text-xs text-blue-400 bg-blue-900/50 px-2 py-0.5 rounded-full mt-1 inline-block">Admin</span>
+                            <span className="text-xs text-blue-400">Admin</span>
                           )}
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <span className="text-white font-extrabold text-xl">{user.score}</span>
+                      <span className="text-white font-bold text-lg">{user.score}</span>
                       <span className="text-slate-400 text-sm ml-1">pts</span>
                     </td>
                   </tr>

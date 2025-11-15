@@ -1,103 +1,160 @@
-import { useState, useEffect, createContext, useContext } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
+import { supabase } from '../lib/supabase';
+import type { User } from '@supabase/supabase-js';
 
-// --- UTILITY API (REUTILIZARE) ---
-const API_URL = '/api.php'; 
+// --- Definirea Tipului Contextului ---
+interface AuthContextType {
+  user: User | null;
+  isAdmin: boolean;
+  loading: boolean;
+  signIn: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string, username: string) => Promise<void>;
+  signOut: () => Promise<void>;
+}
 
-async function customApi(action: string, data?: any): Promise<any> {
-    const isGet = data === undefined || action === 'load_tournaments' || action === 'load_user_picks' || action === 'get_current_user';
-    const method = isGet ? 'GET' : 'POST';
-    
-    let url = `${API_URL}?action=${action}`;
-    let body = undefined;
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-    if (!isGet) {
-        body = JSON.stringify({ action, ...data });
-    } else if (data) {
-        // Pentru GET, adăugăm datele ca query params dacă există
-        url += `&${new URLSearchParams(data).toString()}`;
+// --- Funcție Ajutătoare: Creează Profilul la Logare ---
+/**
+ * Verifică dacă există un rând user_data pentru ID-ul dat. 
+ * Dacă nu există, inserează rândul cu datele inițiale.
+ */
+async function ensureUserProfile(userId: string, username: string) {
+    // 1. Verifică existența
+    const { data: existingProfile } = await supabase
+        .from('user_data')
+        .select('id')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+    // 2. Dacă profilul nu există, creează-l
+    if (!existingProfile) {
+        const { error: profileError } = await supabase
+            .from('user_data')
+            .insert({
+                user_id: userId,
+                username: username,
+                is_admin: false,
+                picks: {},
+                score: 0
+            });
+
+        if (profileError) {
+            console.error("Eroare la crearea profilului:", profileError);
+            throw profileError;
+        }
     }
+}
 
-    const response = await fetch(url, {
-        method,
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: body,
+// --- Providerul de Autentificare ---
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [loading, setLoading] = useState(true);
+  
+  // Stocăm username-ul local în timpul sign-up-ului pentru a-l folosi la prima logare
+  const [tempUsername, setTempUsername] = useState<string | null>(null); 
+
+  useEffect(() => {
+    // Verificarea inițială a sesiunii
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        checkAdminStatus(session.user.id);
+      } else {
+        setLoading(false);
+      }
     });
 
-    const result = await response.json();
-
-    if (!response.ok || !result.success) {
-        // Include un mecanism de a returna null/undefined pentru 404 (neautentificat)
-        if (response.status === 401) {
-            return null;
+    // Abonarea la schimbările de stare
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      (async () => {
+        setUser(session?.user ?? null);
+        if (session?.user) {
+          // Asigură-te că profilul este creat la fiecare logare (dacă lipsește)
+          // Notă: La prima logare, ar trebui să avem username-ul stocat (sau îl extragem din metadate/email).
+          // Aici folosim o valoare generică dacă username-ul nu e disponibil direct.
+          const usernameToUse = tempUsername || session.user.email?.split('@')[0] || 'NouUtilizator';
+          
+          await ensureUserProfile(session.user.id, usernameToUse);
+          await checkAdminStatus(session.user.id);
+          
+        } else {
+          setIsAdmin(false);
+          setLoading(false);
         }
-        throw new Error(result.error || `API Error for action ${action}`);
+      })();
+    });
+
+    return () => subscription.unsubscribe();
+  }, [tempUsername]);
+
+  async function checkAdminStatus(userId: string) {
+    try {
+      const { data, error } = await supabase
+        .from('user_data')
+        .select('is_admin')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (error) throw error;
+      setIsAdmin(data?.is_admin ?? false);
+    } catch (error) {
+      console.error('Error checking admin status:', error);
+      setIsAdmin(false);
+    } finally {
+      setLoading(false);
     }
-    return result.data || result;
-}
-// ------------------------------------
+  }
 
-interface User {
-    id: string;
-    username: string;
-    is_admin: boolean;
-}
-
-interface AuthContextType {
-    user: User | null;
-    loading: boolean;
-    signIn: (username: string, password: string) => Promise<void>; 
-    signOut: () => Promise<void>; 
-}
-
-export const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-    const [user, setUser] = useState<User | null>(null);
-    const [loading, setLoading] = useState(true);
-
-    // Încearcă să încarce utilizatorul curent la pornire
-    useEffect(() => {
-        const loadCurrentUser = async () => {
-            try {
-                // Presupunem că backend-ul folosește sesiuni/cookie-uri pentru a identifica utilizatorul
-                const userData = await customApi('get_current_user'); 
-                if (userData) {
-                    setUser(userData as User);
-                }
-            } catch (error) {
-                // Dacă nu ești autentificat (ex: 401), console.log
-                console.log("No active user session found.", error);
-                setUser(null);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        loadCurrentUser();
-    }, []);
-
-    const signIn = async (username: string, password: string) => {
-        // Simularea login-ului
-        const loginData = await customApi('sign_in', { username, password });
-        setUser(loginData.user as User);
-    };
-
-    const signOut = async () => {
-        await customApi('sign_out');
-        setUser(null);
-    };
-
-    const value = { user, loading, signIn, signOut };
-
-    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
-
-export const useAuth = () => {
-    const context = useContext(AuthContext);
-    if (context === undefined) {
-        throw new Error('useAuth must be used within an AuthProvider');
+  async function signIn(email: string, password: string) {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    
+    // Dacă logarea are succes și avem un utilizator, ne asigurăm că are un profil
+    if (data.user) {
+        const usernameToUse = data.user.email?.split('@')[0] || 'Utilizator'; // Folosim o valoare implicită
+        await ensureUserProfile(data.user.id, usernameToUse);
     }
-    return context;
-};
+  }
+
+  async function signUp(email: string, password: string, username: string) {
+    // Stocăm username-ul local înainte de înregistrare
+    setTempUsername(username);
+    
+    // 1. Înregistrarea utilizatorului (trimite email de confirmare)
+    const { error } = await supabase.auth.signUp({ email, password });
+    
+    if (error) {
+        setTempUsername(null); // Ștergeți-l dacă înregistrarea eșuează
+        throw error;
+    }
+    
+    // 2. Notifică utilizatorul să verifice email-ul.
+    // NU se inserează profilul user_data aici din cauza restricțiilor RLS.
+    // Profilul va fi creat automat la prima logare reușită (vezi funcția ensureUserProfile apelată în useEffect sau signIn).
+    
+    // Aruncăm o eroare custom care poate fi prinsă în UI pentru a afișa mesajul.
+    throw new Error('SUCCESS_EMAIL_CONFIRMATION_REQUIRED'); 
+  }
+
+  async function signOut() {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+  }
+
+  return (
+    <AuthContext.Provider value={{ user, isAdmin, loading, signIn, signUp, signOut }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+// --- Hook-ul Custom ---
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+}

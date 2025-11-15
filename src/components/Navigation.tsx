@@ -23,8 +23,7 @@ export default function Navigation({ currentView, onViewChange }: NavigationProp
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-8">
             <div className="text-xl font-bold text-white flex items-center gap-2">
-              <Trophy className="w-6 h-6 text-yellow-500" />
-              LoL Pick'ems
+              League Of Loolish E3 Pick'ems
             </div>
             <div className="flex gap-2">
               <button

@@ -5,6 +5,24 @@ import Navigation from './components/Navigation';
 import PickemsView from './components/viewer/PickemsView';
 import Leaderboard from './components/viewer/Leaderboard';
 import AdminPanel from './components/admin/AdminPanel';
+import { Routes, Route } from 'react-router-dom';
+import AdminDashboard from './pages/AdminDashboard.'; 
+import MatchesAdmin from './pages/admin/MatchesAdmin.';
+
+function AppRoutes() {
+  return (
+    <Routes>
+      {/* ... Alte rute publice ... */}
+      
+      {/* Rute de Admin */}
+      <Route path="/admin" element={<AdminDashboard />}>
+        {/* Acesta va fi randat în <Outlet /> din AdminDashboard */}
+        <Route path="matches" element={<MatchesAdmin />} />
+        {/* Poți adăuga și alte sub-rute: <Route path="teams" element={<TeamsAdmin />} /> */}
+      </Route>
+    </Routes>
+  );
+}
 
 function AppContent() {
   const { user, loading } = useAuth();

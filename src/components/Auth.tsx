@@ -36,7 +36,7 @@ export default function Auth() {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-full mb-4">
             <Lock className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">LoL Pick'ems</h1>
+          <h1 className="text-3xl font-bold text-white mb-2">League Of Loolish E3 Pick'ems</h1>
           <p className="text-slate-400">
             {isLogin ? 'Sign in to make your picks' : 'Create your account'}
           </p>
