@@ -203,7 +203,7 @@ function GroupStagePickems({
                       <h3 className="text-white font-semibold">
                         {team.name} {team.tag && <span className="text-blue-300 text-sm ml-1">({team.tag})</span>}
                       </h3>
-                      <p className="text-slate-400 text-sm">{team.region || 'N/A'}</p>
+                      {team.region && <p className="text-slate-400 text-sm">{team.region}</p>}
                     </div>
                   </div>
                   {(picks[group] || []).includes(team.id) && (
