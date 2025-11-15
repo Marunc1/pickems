@@ -269,16 +269,16 @@ function TournamentManager({
 
 function TeamManager({ tournament, onRefresh }: { tournament: Tournament; onRefresh: () => void }) {
   const [teams, setTeams] = useState<Team[]>(tournament.teams || []);
-  const [newTeam, setNewTeam] = useState({ name: '', region: '', logo: '🏆', group: 'A' });
-  const groups = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']; // Ensure groups are defined here too
+  const [newTeam, setNewTeam] = useState({ name: '', tag: '', region: '', logo: '🏆', group: 'A' }); // Added tag to newTeam state
+  const groups = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
 
   useEffect(() => {
     setTeams(tournament.teams || []);
   }, [tournament.teams]);
 
   function addTeam() {
-    if (!newTeam.name || !newTeam.region || !newTeam.logo) {
-      alert('Please fill in all team details.');
+    if (!newTeam.name || !newTeam.tag || !newTeam.region || !newTeam.logo) { // Validate tag
+      alert('Please fill in all team details (Name, Tag, Region, Logo).');
       return;
     }
     const team: Team = {
@@ -286,7 +286,7 @@ function TeamManager({ tournament, onRefresh }: { tournament: Tournament; onRefr
       ...newTeam
     };
     setTeams([...teams, team]);
-    setNewTeam({ name: '', region: '', logo: '🏆', group: 'A' });
+    setNewTeam({ name: '', tag: '', region: '', logo: '🏆', group: 'A' }); // Reset tag
   }
 
   function removeTeam(id: string) {
@@ -316,7 +316,7 @@ function TeamManager({ tournament, onRefresh }: { tournament: Tournament; onRefr
           <Plus className="w-7 h-7 text-green-500" />
           Add New Team
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+        <div className="grid grid-cols-1 md:grid-cols-6 gap-4 items-end"> {/* Adjusted grid columns */}
           <div className="md:col-span-2">
             <label htmlFor="team-name" className="block text-sm font-medium text-slate-300 mb-2">Team Name</label>
             <input
@@ -324,6 +324,17 @@ function TeamManager({ tournament, onRefresh }: { tournament: Tournament; onRefr
               type="text"
               value={newTeam.name}
               onChange={(e) => setNewTeam({ ...newTeam, name: e.target.value })}
+              placeholder="e.g., SK Telecom T1"
+              className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label htmlFor="team-tag" className="block text-sm font-medium text-slate-300 mb-2">Tag</label> {/* New input for tag */}
+            <input
+              id="team-tag"
+              type="text"
+              value={newTeam.tag}
+              onChange={(e) => setNewTeam({ ...newTeam, tag: e.target.value })}
               placeholder="e.g., T1"
               className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
@@ -396,7 +407,7 @@ function TeamManager({ tournament, onRefresh }: { tournament: Tournament; onRefr
                 <div className="flex items-center gap-3">
                   <span className="text-3xl">{team.logo}</span>
                   <div>
-                    <h3 className="text-white font-semibold text-lg">{team.name}</h3>
+                    <h3 className="text-white font-semibold text-lg">{team.name} <span className="text-blue-300 text-sm ml-1">({team.tag})</span></h3> {/* Display tag */}
                     <p className="text-slate-400 text-sm">
                       {team.region} • Group <span className="font-medium text-blue-300">{team.group}</span>
                     </p>

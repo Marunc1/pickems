@@ -12,6 +12,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 export interface Team {
   id: string;
   name: string;
+  tag: string; // Added tag property
   region: string;
   logo: string;
   group?: string;
