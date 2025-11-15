@@ -3,37 +3,24 @@ import { supabase, type Tournament, type Team } from '../../lib/supabase';
 import { Settings, Users, Trophy, Save, Plus, Trash2, Grid3x3, ListTree, Edit, XCircle, CheckCircle } from 'lucide-react';
 import GroupsManager from './GroupsManager';
 import BracketManager from './BracketManager';
+import TournamentManager from './TournamentManager'; // Importăm noul component
+import { useOutletContext } from 'react-router-dom';
+
+// Definirea tipului pentru contextul Outlet
+type OutletContextType = {
+  tournaments: Tournament[];
+  selectedTournamentId: string | null;
+  setSelectedTournamentId: (id: string) => void;
+  onRefreshTournaments: () => void;
+};
 
 export default function AdminPanel() {
-  const [tournaments, setTournaments] = useState<Tournament[]>([]);
-  const [selectedTournament, setSelectedTournament] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'tournaments' | 'teams' | 'groups' | 'bracket' | 'settings'>('tournaments');
 
-  useEffect(() => {
-    loadTournaments();
-  }, []);
+  // Extragem datele din contextul Outlet
+  const { tournaments, selectedTournamentId, setSelectedTournamentId, onRefreshTournaments } = useOutletContext<OutletContextType>();
 
-  async function loadTournaments() {
-    try {
-      const { data, error } = await supabase
-        .from('tournament_settings')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setTournaments(data || []);
-      if (data && data.length > 0 && !selectedTournament) {
-        setSelectedTournament(data[0].id);
-      }
-    } catch (error) {
-      console.error('Error loading tournaments:', error);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  const tournament = tournaments.find(t => t.id === selectedTournament);
+  const tournament = tournaments.find(t => t.id === selectedTournamentId);
 
   return (
     <div className="min-h-screen bg-slate-900">
@@ -45,8 +32,8 @@ export default function AdminPanel() {
           </h1>
           {tournaments.length > 0 && (
             <select
-              value={selectedTournament || ''}
-              onChange={(e) => setSelectedTournament(e.target.value)}
+              value={selectedTournamentId || ''}
+              onChange={(e) => setSelectedTournamentId(e.target.value)}
               className="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white font-semibold focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               {tournaments.map((t) => (
@@ -121,145 +108,31 @@ export default function AdminPanel() {
         </div>
 
         <div className="flex-1 p-6">
-          {loading ? (
-            <div className="text-white text-center py-12">Loading...</div>
+          {tournaments.length === 0 && activeTab !== 'tournaments' ? (
+            <div className="text-white text-center py-12">
+              Please create a tournament first in the "Tournaments" tab.
+            </div>
           ) : (
             <>
               {activeTab === 'tournaments' && (
                 <TournamentManager
                   tournaments={tournaments}
-                  selectedTournament={tournament}
-                  onRefresh={loadTournaments}
+                  selectedTournamentId={selectedTournamentId}
+                  setSelectedTournamentId={setSelectedTournamentId}
+                  onRefresh={onRefreshTournaments}
                 />
               )}
               {activeTab === 'teams' && tournament && (
-                <TeamManager tournament={tournament} onRefresh={loadTournaments} />
+                <TeamManager tournament={tournament} onRefresh={onRefreshTournaments} />
               )}
               {activeTab === 'groups' && tournament && (
-                <GroupsManager tournament={tournament} onRefresh={loadTournaments} />
+                <GroupsManager tournament={tournament} onRefresh={onRefreshTournaments} />
               )}
               {activeTab === 'bracket' && tournament && (
-                <BracketManager tournament={tournament} onRefresh={loadTournaments} />
+                <BracketManager tournament={tournament} onRefresh={onRefreshTournaments} />
               )}
               {activeTab === 'settings' && <SettingsManager />}
             </>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function TournamentManager({
-  tournaments,
-  selectedTournament,
-  onRefresh
-}: {
-  tournaments: Tournament[];
-  selectedTournament?: Tournament;
-  onRefresh: () => void;
-}) {
-  const [name, setName] = useState('');
-  const [stage, setStage] = useState('groups');
-  const [status, setStatus] = useState('upcoming');
-
-  async function createTournament() {
-    try {
-      const { error } = await supabase.from('tournament_settings').insert({
-        name,
-        stage,
-        status,
-        teams: [],
-        matches: [],
-        bracket_data: {}
-      });
-
-      if (error) throw error;
-      onRefresh();
-      setName('');
-    } catch (error) {
-      console.error('Error creating tournament:', error);
-      alert('Error creating tournament');
-    }
-  }
-
-  return (
-    <div className="space-y-6">
-      <div className="bg-slate-800 rounded-xl p-6 border border-slate-700 shadow-lg">
-        <h2 className="text-2xl font-bold text-white mb-5 flex items-center gap-3">
-          <Plus className="w-7 h-7 text-green-500" />
-          Create New Tournament
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-          <div className="col-span-2">
-            <label htmlFor="tournament-name" className="block text-sm font-medium text-slate-300 mb-2">Tournament Name</label>
-            <input
-              id="tournament-name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g., Worlds 2025"
-              className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div>
-            <label htmlFor="tournament-stage" className="block text-sm font-medium text-slate-300 mb-2">Stage</label>
-            <select
-              id="tournament-stage"
-              value={stage}
-              onChange={(e) => setStage(e.target.value)}
-              className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="groups">Groups</option>
-              <option value="swiss">Swiss</option>
-              <option value="playoffs">Playoffs</option>
-            </select>
-          </div>
-          <div>
-            <label htmlFor="tournament-status" className="block text-sm font-medium text-slate-300 mb-2">Status</label>
-            <select
-              id="tournament-status"
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="upcoming">Upcoming</option>
-              <option value="active">Active</option>
-              <option value="completed">Completed</option>
-            </select>
-          </div>
-        </div>
-        <button
-          onClick={createTournament}
-          className="mt-6 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors font-semibold flex items-center gap-2"
-        >
-          <Plus className="w-5 h-5" />
-          Create Tournament
-        </button>
-      </div>
-
-      <div className="bg-slate-800 rounded-xl p-6 border border-slate-700 shadow-lg">
-        <h2 className="text-2xl font-bold text-white mb-5">Existing Tournaments</h2>
-        <div className="space-y-4">
-          {tournaments.length === 0 ? (
-            <p className="text-slate-400 text-center py-4">No tournaments created yet.</p>
-          ) : (
-            tournaments.map((tournament) => (
-              <div
-                key={tournament.id}
-                className="bg-slate-700 p-4 rounded-lg flex items-center justify-between hover:bg-slate-600 transition-colors duration-200"
-              >
-                <div>
-                  <h3 className="text-white font-semibold text-lg">{tournament.name}</h3>
-                  <p className="text-slate-400 text-sm mt-1">
-                    Stage: <span className="font-medium text-blue-300">{tournament.stage}</span> • Status: <span className={`font-medium ${tournament.status === 'active' ? 'text-green-400' : tournament.status === 'upcoming' ? 'text-yellow-400' : 'text-red-400'}`}>{tournament.status}</span>
-                  </p>
-                </div>
-                <span className="text-slate-300 text-sm bg-slate-600 px-3 py-1 rounded-full">
-                  {tournament.teams?.length || 0} teams
-                </span>
-              </div>
-            ))
           )}
         </div>
       </div>

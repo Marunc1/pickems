@@ -1,10 +1,47 @@
 import { useAuth } from '../contexts/AuthContext';
 import { Navigate, Link, Outlet, useLocation } from 'react-router-dom'; 
 import { Settings, LayoutDashboard, ListTree, Users, Trophy } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { supabase, type Tournament } from '../lib/supabase'; // Importăm Tournament type
 
 function AdminDashboard() {
-  const { user, isAdmin, loading } = useAuth();
+  const { user, isAdmin, loading: authLoading } = useAuth();
   const location = useLocation();
+
+  const [tournaments, setTournaments] = useState<Tournament[]>([]);
+  const [selectedTournamentId, setSelectedTournamentId] = useState<string | null>(null);
+  const [tournamentsLoading, setTournamentsLoading] = useState(true);
+
+  useEffect(() => {
+    loadTournaments();
+  }, []);
+
+  async function loadTournaments() {
+    setTournamentsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('tournament_settings')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setTournaments(data || []);
+      if (data && data.length > 0 && !selectedTournamentId) {
+        setSelectedTournamentId(data[0].id); // Selectează primul turneu implicit
+      } else if (data && data.length > 0 && selectedTournamentId && !data.some(t => t.id === selectedTournamentId)) {
+        // Dacă turneul selectat anterior nu mai există, selectează primul
+        setSelectedTournamentId(data[0].id);
+      } else if (data && data.length === 0) {
+        setSelectedTournamentId(null); // Nu există turnee
+      }
+    } catch (error) {
+      console.error('Error loading tournaments in AdminDashboard:', error);
+    } finally {
+      setTournamentsLoading(false);
+    }
+  }
+
+  const loading = authLoading || tournamentsLoading;
 
   if (loading) {
     return <div className="text-white text-center py-12 text-xl">Se încarcă setările de admin...</div>;
@@ -75,7 +112,7 @@ function AdminDashboard() {
           </nav>
         </aside>
         <main className="flex-1 p-8 bg-slate-900">
-          <Outlet /> 
+          <Outlet context={{ tournaments, selectedTournamentId, setSelectedTournamentId, onRefreshTournaments: loadTournaments }} />
         </main>
       </div>
     </div>

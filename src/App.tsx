@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate, Outlet, useOutletContext } from 'react-router-dom';
 import { useEffect } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Auth from './components/Auth';
@@ -8,6 +8,15 @@ import Leaderboard from './components/viewer/Leaderboard';
 import AdminPanel from './components/admin/AdminPanel';
 import AdminDashboard from './pages/AdminDashboard'; 
 import MatchesAdmin from './pages/admin/MatchesAdmin';
+import { type Tournament } from './lib/supabase'; // Importăm Tournament type
+
+// Definirea tipului pentru contextul Outlet
+type OutletContextType = {
+  tournaments: Tournament[];
+  selectedTournamentId: string | null;
+  setSelectedTournamentId: (id: string) => void;
+  onRefreshTournaments: () => void;
+};
 
 function AppContent() {
   const { user, loading, isAdmin } = useAuth();
@@ -44,13 +53,19 @@ function AppContent() {
         {/* Nested admin routes */}
         <Route path="/admin" element={<AdminDashboard />}>
           <Route index element={<AdminPanel />} /> {/* Default child route for /admin */}
-          <Route path="matches" element={<MatchesAdmin />} />
+          <Route path="matches" element={<MatchesAdminWrapper />} /> {/* Folosim un wrapper */}
           {/* Add other admin sub-routes here if needed */}
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </div>
   );
+}
+
+// Wrapper pentru MatchesAdmin pentru a extrage contextul
+function MatchesAdminWrapper() {
+  const { selectedTournamentId } = useOutletContext<OutletContextType>();
+  return <MatchesAdmin selectedTournamentId={selectedTournamentId} />;
 }
 
 function App() {
