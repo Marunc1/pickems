@@ -115,7 +115,7 @@ export default function PickemsView() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w-7xl px-6 py-8"> {/* Removed mx-auto here */}
         {selectedTournament.stage === 'playoffs' ? (
           <BracketView
             tournament={selectedTournament}
