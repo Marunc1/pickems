@@ -39,12 +39,10 @@ export default function ViewerBracketMatchCard({ match, teams, userPick, onPick,
   const isTeam2Selectable = !!match.team2_id;
 
   return (
-    <div className="bg-slate-800 rounded-lg p-4 w-40 h-[180px] border border-slate-700 shadow-md flex flex-col justify-between"> {/* Added h-[180px] and flex-col justify-between */}
-      <div className="text-slate-400 text-xs font-semibold mb-2 text-center"> {/* Changed mb-3 to mb-2 */}
-        Match {match.match_number}
-      </div>
+    <div className="bg-slate-800 rounded-lg p-4 w-40 h-[180px] border border-slate-700 shadow-md flex flex-col justify-between">
+      {/* Removed the match number display */}
 
-      <div className="space-y-2 flex-grow"> {/* Added flex-grow to allow content to expand */}
+      <div className="space-y-2 flex-grow">
         <div
           className={`flex items-center justify-between p-2 rounded-md transition-colors duration-150 ${
             isTeam1Selectable ? 'cursor-pointer hover:bg-slate-700' : 'opacity-50 cursor-not-allowed'
@@ -77,7 +75,7 @@ export default function ViewerBracketMatchCard({ match, teams, userPick, onPick,
       </div>
 
       {userPick && (
-        <div className="mt-2 pt-2 border-t border-slate-700"> {/* Changed mt-3 pt-3 to mt-2 pt-2 */}
+        <div className="mt-2 pt-2 border-t border-slate-700">
           <div className="flex items-center justify-center gap-2 text-blue-400 font-semibold text-xs">
             <Trophy className="w-3 h-3" />
             Your Pick: {getTeamById(userPick)?.name}
