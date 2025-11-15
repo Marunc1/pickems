@@ -6,24 +6,8 @@ import Navigation from './components/Navigation';
 import PickemsView from './components/viewer/PickemsView';
 import Leaderboard from './components/viewer/Leaderboard';
 import AdminPanel from './components/admin/AdminPanel';
-import { Routes, Route } from 'react-router-dom';
-import AdminDashboard from './pages/AdminDashboard.'; 
-import MatchesAdmin from './pages/admin/MatchesAdmin.';
-
-function AppRoutes() {
-  return (
-    <Routes>
-      {/* ... Alte rute publice ... */}
-      
-      {/* Rute de Admin */}
-      <Route path="/admin" element={<AdminDashboard />}>
-        {/* Acesta va fi randat în <Outlet /> din AdminDashboard */}
-        <Route path="matches" element={<MatchesAdmin />} />
-        {/* Poți adăuga și alte sub-rute: <Route path="teams" element={<TeamsAdmin />} /> */}
-      </Route>
-    </Routes>
-  );
-}
+import AdminDashboard from './pages/AdminDashboard'; 
+import MatchesAdmin from './pages/admin/MatchesAdmin';
 
 function AppContent() {
   const { user, loading, isAdmin } = useAuth();
@@ -31,7 +15,8 @@ function AppContent() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading && user && location.pathname === '/admin' && !isAdmin) {
+    // Redirect non-admin users trying to access any /admin/* path
+    if (!loading && user && location.pathname.startsWith('/admin') && !isAdmin) {
       navigate('/');
     }
   }, [user, loading, isAdmin, location.pathname, navigate]);
@@ -48,7 +33,7 @@ function AppContent() {
     return <Auth />;
   }
 
-  const isAdminRoute = location.pathname === '/admin';
+  const isAdminRoute = location.pathname.startsWith('/admin');
 
   return (
     <div className="min-h-screen bg-slate-900">
@@ -56,7 +41,12 @@ function AppContent() {
       <Routes>
         <Route path="/" element={<PickemsView />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
-        <Route path="/admin" element={isAdmin ? <AdminPanel /> : <Navigate to="/" replace />} />
+        {/* Nested admin routes */}
+        <Route path="/admin" element={<AdminDashboard />}>
+          <Route index element={<AdminPanel />} /> {/* Default child route for /admin */}
+          <Route path="matches" element={<MatchesAdmin />} />
+          {/* Add other admin sub-routes here if needed */}
+        </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </div>

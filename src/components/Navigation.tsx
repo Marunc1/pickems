@@ -19,9 +19,6 @@ export default function Navigation() {
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-8">
-            <div className="text-xl font-bold text-white flex items-center gap-2">
-              League Of Loolish E3 Pick'ems
-            </div>
             <Link to="/" className="text-xl font-bold text-white flex items-center gap-2 hover:text-blue-400 transition-colors">
               League Of Loolish E3 Pick'ems
             </Link>
@@ -52,7 +49,7 @@ export default function Navigation() {
                 <Link
                   to="/admin"
                   className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
-                    location.pathname === '/admin'
+                    location.pathname.startsWith('/admin') // Updated to startsWith for nested routes
                       ? 'bg-blue-600 text-white'
                       : 'text-slate-300 hover:bg-slate-700'
                   }`}
