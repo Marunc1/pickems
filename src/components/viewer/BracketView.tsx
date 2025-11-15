@@ -42,14 +42,14 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
   }
 
   const getColumnMarginTop = (roundName: string) => {
-    // Assuming ViewerBracketMatchCard has a height of ~120px and space-y-8 (32px)
-    // Total slot height = 120 + 32 = 152px
+    // Card height is 180px, space-y-8 is 32px. Total slot height = 180 + 32 = 212px.
+    const slotHeight = 212; 
     switch (roundName) {
       case 'round_of_16': return 'mt-0';
-      case 'quarterfinals': return 'mt-[76px]'; // Half of 152px
-      case 'semifinals': return 'mt-[152px]'; // 1 * 152px
-      case 'finals': return 'mt-[228px]'; // 1.5 * 152px
-      case 'third_place': return 'mt-[228px]'; // Same as finals for alignment
+      case 'quarterfinals': return `mt-[${slotHeight / 2}px]`; // Half of a slot height
+      case 'semifinals': return `mt-[${slotHeight}px]`; // One full slot height
+      case 'finals': return `mt-[${slotHeight * 1.5}px]`; // One and a half slot heights
+      case 'third_place': return `mt-[${slotHeight * 1.5}px]`; // Same as finals for alignment
       default: return 'mt-0';
     }
   };
