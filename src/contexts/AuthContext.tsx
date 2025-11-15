@@ -55,6 +55,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Stocăm username-ul local în timpul sign-up-ului pentru a-l folosi la prima logare
   const [tempUsername, setTempUsername] = useState<string | null>(null); 
 
+  async function signIn(email: string, password: string) {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    
+    // Dacă logarea are succes și avem un utilizator, ne asigurăm că are un profil
+    if (data.user) {
+        const usernameToUse = data.user.email?.split('@')[0] || 'Utilizator'; // Folosim o valoare implicită
+        await ensureUserProfile(data.user.id, usernameToUse);
+    }
+  }
+
+  async function signUp(email: string, password: string, username: string) {
+    // Stocăm username-ul local înainte de înregistrare
+    setTempUsername(username);
+    
+    // 1. Înregistrarea utilizatorului (trimite email de confirmare)
+    const { error } = await supabase.auth.signUp({ email, password });
+    
+    if (error) {
+        setTempUsername(null); // Ștergeți-l dacă înregistrarea eșuează
+        throw error;
+    }
+    
+    // 2. Notifică utilizatorul să verifice email-ul.
+    // NU se inserează profilul user_data aici din cauza restricțiilor RLS.
+    // Profilul va fi creat automat la prima logare reușită (vezi funcția ensureUserProfile apelată în useEffect sau signIn).
+    
+    // Aruncăm o eroare custom care poate fi prinsă în UI pentru a afișa mesajul.
+    throw new Error('SUCCESS_EMAIL_CONFIRMATION_REQUIRED'); 
+  }
+
+  async function signOut() {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+  }
+
   // Funcție pentru a verifica și seta starea de admin
   async function checkAdminStatus(userId: string) {
     try {
@@ -120,42 +156,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       subscription.unsubscribe();
     };
   }, [tempUsername]); // tempUsername este o dependență
-
-  async function signIn(email: string, password: string) {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) throw error;
-    
-    // Dacă logarea are succes și avem un utilizator, ne asigurăm că are un profil
-    if (data.user) {
-        const usernameToUse = data.user.email?.split('@')[0] || 'Utilizator'; // Folosim o valoare implicită
-        await ensureUserProfile(data.user.id, usernameToUse);
-    }
-  }
-
-  async function signUp(email: string, password: string, username: string) {
-    // Stocăm username-ul local înainte de înregistrare
-    setTempUsername(username);
-    
-    // 1. Înregistrarea utilizatorului (trimite email de confirmare)
-    const { error } = await supabase.auth.signUp({ email, password });
-    
-    if (error) {
-        setTempUsername(null); // Ștergeți-l dacă înregistrarea eșuează
-        throw error;
-    }
-    
-    // 2. Notifică utilizatorul să verifice email-ul.
-    // NU se inserează profilul user_data aici din cauza restricțiilor RLS.
-    // Profilul va fi creat automat la prima logare reușită (vezi funcția ensureUserProfile apelată în useEffect sau signIn).
-    
-    // Aruncăm o eroare custom care poate fi prinsă în UI pentru a afișa mesajul.
-    throw new Error('SUCCESS_EMAIL_CONFIRMATION_REQUIRED'); 
-  }
-
-  async function signOut() {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
-  }
 
   return (
     <AuthContext.Provider value={{ user, isAdmin, loading, signIn, signUp, signOut }}>
