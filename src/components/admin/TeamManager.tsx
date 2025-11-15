@@ -150,7 +150,7 @@ export default function TeamManager({ tournament, onRefresh }: { tournament: Tou
               >
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-3">
-                    <span className="text-3xl">{team.logo || '❓'}</span>
+                    <span className="text-3xl">{team.logo}</span> {/* Removed || '❓' */}
                     <div>
                       {editingTeamId === team.id ? (
                         <input
