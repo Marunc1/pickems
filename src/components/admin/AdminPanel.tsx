@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase, type Tournament, type Team } from '../../lib/supabase';
-import { Settings, Users, Trophy, Save, Plus, Trash2, Grid3x3, ListTree } from 'lucide-react';
+import { Settings, Users, Trophy, Save, Plus, Trash2, Grid3x3, ListTree, Edit, XCircle, CheckCircle } from 'lucide-react';
 import GroupsManager from './GroupsManager';
 import BracketManager from './BracketManager';
 
@@ -269,31 +269,33 @@ function TournamentManager({
 
 function TeamManager({ tournament, onRefresh }: { tournament: Tournament; onRefresh: () => void }) {
   const [teams, setTeams] = useState<Team[]>(tournament.teams || []);
-  const [newTeam, setNewTeam] = useState({ name: '', tag: '' }); // Removed region, logo, group from initial state
-  const groups = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']; // Still needed for group selection later
+  const [newTeam, setNewTeam] = useState({ name: '', tag: '', region: '', logo: '', group: '' });
+  const [editingTeamId, setEditingTeamId] = useState<string | null>(null);
+  const groups = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
 
   useEffect(() => {
     setTeams(tournament.teams || []);
   }, [tournament.teams]);
 
   function addTeam() {
-    if (!newTeam.name || !newTeam.tag) { // Only require name and tag
+    if (!newTeam.name || !newTeam.tag) {
       alert('Please fill in team Name and Tag.');
       return;
     }
     const team: Team = {
       id: `team_${Date.now()}`,
       ...newTeam,
-      region: '', // Explicitly set to empty string or undefined
-      logo: '',   // Explicitly set to empty string or undefined
-      group: ''   // Explicitly set to empty string or undefined
     };
     setTeams([...teams, team]);
-    setNewTeam({ name: '', tag: '' }); // Reset state
+    setNewTeam({ name: '', tag: '', region: '', logo: '', group: '' });
   }
 
   function removeTeam(id: string) {
     setTeams(teams.filter(t => t.id !== id));
+  }
+
+  function updateTeamField(id: string, field: keyof Team, value: string) {
+    setTeams(teams.map(t => t.id === id ? { ...t, [field]: value } : t));
   }
 
   async function saveTeams() {
@@ -304,14 +306,14 @@ function TeamManager({ tournament, onRefresh }: { tournament: Tournament; onRefr
         .eq('id', tournament.id);
 
       if (error) {
-        console.error('Supabase error saving teams:', error); // More detailed error logging
+        console.error('Supabase error saving teams:', error);
         throw error;
       }
       onRefresh();
       alert('Teams saved successfully!');
     } catch (error) {
       console.error('Error saving teams:', error);
-      alert('Error saving teams. Check console for details and RLS policies.'); // Updated alert
+      alert('Error saving teams. Check console for details and RLS policies.');
     }
   }
 
@@ -322,11 +324,11 @@ function TeamManager({ tournament, onRefresh }: { tournament: Tournament; onRefr
           <Plus className="w-7 h-7 text-green-500" />
           Add New Team
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end"> {/* Adjusted grid columns */}
-          <div className="md:col-span-1">
-            <label htmlFor="team-name" className="block text-sm font-medium text-slate-300 mb-2">Team Name</label>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+          <div>
+            <label htmlFor="new-team-name" className="block text-sm font-medium text-slate-300 mb-2">Team Name</label>
             <input
-              id="team-name"
+              id="new-team-name"
               type="text"
               value={newTeam.name}
               onChange={(e) => setNewTeam({ ...newTeam, name: e.target.value })}
@@ -335,9 +337,9 @@ function TeamManager({ tournament, onRefresh }: { tournament: Tournament; onRefr
             />
           </div>
           <div>
-            <label htmlFor="team-tag" className="block text-sm font-medium text-slate-300 mb-2">Tag</label>
+            <label htmlFor="new-team-tag" className="block text-sm font-medium text-slate-300 mb-2">Tag</label>
             <input
-              id="team-tag"
+              id="new-team-tag"
               type="text"
               value={newTeam.tag}
               onChange={(e) => setNewTeam({ ...newTeam, tag: e.target.value })}
@@ -345,16 +347,50 @@ function TeamManager({ tournament, onRefresh }: { tournament: Tournament; onRefr
               className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
-          {/* Removed Region and Logo inputs */}
-          {/* Removed Group select from initial add form */}
+          <div>
+            <label htmlFor="new-team-region" className="block text-sm font-medium text-slate-300 mb-2">Region (Optional)</label>
+            <input
+              id="new-team-region"
+              type="text"
+              value={newTeam.region}
+              onChange={(e) => setNewTeam({ ...newTeam, region: e.target.value })}
+              placeholder="e.g., LCK"
+              className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label htmlFor="new-team-logo" className="block text-sm font-medium text-slate-300 mb-2">Logo Emoji (Optional)</label>
+            <input
+              id="new-team-logo"
+              type="text"
+              value={newTeam.logo}
+              onChange={(e) => setNewTeam({ ...newTeam, logo: e.target.value })}
+              placeholder="e.g., 🏆"
+              className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label htmlFor="new-team-group" className="block text-sm font-medium text-slate-300 mb-2">Group (Optional)</label>
+            <select
+              id="new-team-group"
+              value={newTeam.group}
+              onChange={(e) => setNewTeam({ ...newTeam, group: e.target.value })}
+              className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Select Group</option>
+              {groups.map(g => <option key={g} value={g}>{g}</option>)}
+            </select>
+          </div>
+          <div className="md:col-span-3 flex justify-end">
+            <button
+              onClick={addTeam}
+              className="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition-colors font-semibold flex items-center justify-center gap-2"
+            >
+              <Plus className="w-5 h-5" />
+              Add Team
+            </button>
+          </div>
         </div>
-        <button
-          onClick={addTeam}
-          className="mt-6 w-full md:w-auto bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition-colors font-semibold flex items-center justify-center gap-2"
-        >
-          <Plus className="w-5 h-5" />
-          Add Team
-        </button>
       </div>
 
       <div className="bg-slate-800 rounded-xl p-6 border border-slate-700 shadow-lg">
@@ -375,26 +411,116 @@ function TeamManager({ tournament, onRefresh }: { tournament: Tournament; onRefr
             teams.map((team) => (
               <div
                 key={team.id}
-                className="bg-slate-700 p-4 rounded-lg flex items-center justify-between hover:bg-slate-600 transition-colors duration-200 border border-slate-600"
+                className="bg-slate-700 p-4 rounded-lg flex flex-col hover:bg-slate-600 transition-colors duration-200 border border-slate-600"
               >
-                <div className="flex items-center gap-3">
-                  <span className="text-3xl">{team.logo || '❓'}</span> {/* Fallback for missing logo */}
-                  <div>
-                    <h3 className="text-white font-semibold text-lg">{team.name} <span className="text-blue-300 text-sm ml-1">({team.tag})</span></h3>
-                    <p className="text-slate-400 text-sm">
-                      {team.region && `${team.region} • `} {/* Display region only if it exists */}
-                      {team.group && `Group `}<span className="font-medium text-blue-300">{team.group}</span>
-                      {!team.region && !team.group && "No additional info"} {/* Fallback if both are missing */}
-                    </p>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <span className="text-3xl">{team.logo || '❓'}</span>
+                    <div>
+                      {editingTeamId === team.id ? (
+                        <input
+                          type="text"
+                          value={team.name}
+                          onChange={(e) => updateTeamField(team.id, 'name', e.target.value)}
+                          className="bg-slate-600 border border-slate-500 rounded px-2 py-1 text-white text-lg font-semibold w-32"
+                        />
+                      ) : (
+                        <h3 className="text-white font-semibold text-lg">{team.name}</h3>
+                      )}
+                      {editingTeamId === team.id ? (
+                        <input
+                          type="text"
+                          value={team.tag || ''}
+                          onChange={(e) => updateTeamField(team.id, 'tag', e.target.value)}
+                          className="bg-slate-600 border border-slate-500 rounded px-2 py-1 text-blue-300 text-sm ml-1 w-20"
+                        />
+                      ) : (
+                        <p className="text-blue-300 text-sm ml-1">({team.tag})</p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    {editingTeamId === team.id ? (
+                      <>
+                        <button
+                          onClick={() => setEditingTeamId(null)}
+                          className="text-green-400 hover:text-green-300 transition-colors p-2 rounded-full hover:bg-slate-500"
+                          title="Save Changes"
+                        >
+                          <CheckCircle className="w-5 h-5" />
+                        </button>
+                        <button
+                          onClick={() => {
+                            setEditingTeamId(null);
+                            setTeams(tournament.teams || []); // Revert changes if cancelled
+                          }}
+                          className="text-red-400 hover:text-red-300 transition-colors p-2 rounded-full hover:bg-slate-500"
+                          title="Cancel Edit"
+                        >
+                          <XCircle className="w-5 h-5" />
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        onClick={() => setEditingTeamId(team.id)}
+                        className="text-blue-400 hover:text-blue-300 transition-colors p-2 rounded-full hover:bg-slate-500"
+                        title="Edit Team"
+                      >
+                        <Edit className="w-5 h-5" />
+                      </button>
+                    )}
+                    <button
+                      onClick={() => removeTeam(team.id)}
+                      className="text-red-400 hover:text-red-300 transition-colors p-2 rounded-full hover:bg-slate-500"
+                      title="Remove Team"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
                   </div>
                 </div>
-                <button
-                  onClick={() => removeTeam(team.id)}
-                  className="text-red-400 hover:text-red-300 transition-colors p-2 rounded-full hover:bg-slate-500"
-                  title="Remove Team"
-                >
-                  <Trash2 className="w-5 h-5" />
-                </button>
+                <div className="flex items-center gap-2 text-slate-400 text-sm">
+                  {editingTeamId === team.id ? (
+                    <>
+                      <label htmlFor={`region-${team.id}`} className="sr-only">Region</label>
+                      <input
+                        id={`region-${team.id}`}
+                        type="text"
+                        value={team.region || ''}
+                        onChange={(e) => updateTeamField(team.id, 'region', e.target.value)}
+                        placeholder="Region"
+                        className="bg-slate-600 border border-slate-500 rounded px-2 py-1 text-white text-sm w-24"
+                      />
+                      <span className="text-slate-500">•</span>
+                      <label htmlFor={`logo-${team.id}`} className="sr-only">Logo</label>
+                      <input
+                        id={`logo-${team.id}`}
+                        type="text"
+                        value={team.logo || ''}
+                        onChange={(e) => updateTeamField(team.id, 'logo', e.target.value)}
+                        placeholder="Logo"
+                        className="bg-slate-600 border border-slate-500 rounded px-2 py-1 text-white text-sm w-16"
+                      />
+                      <span className="text-slate-500">•</span>
+                      <label htmlFor={`group-${team.id}`} className="sr-only">Group</label>
+                      <select
+                        id={`group-${team.id}`}
+                        value={team.group || ''}
+                        onChange={(e) => updateTeamField(team.id, 'group', e.target.value)}
+                        className="bg-slate-600 border border-slate-500 rounded px-2 py-1 text-white text-sm w-24"
+                      >
+                        <option value="">No Group</option>
+                        {groups.map(g => <option key={g} value={g}>{g}</option>)}
+                      </select>
+                    </>
+                  ) : (
+                    <>
+                      {team.region && <span>{team.region}</span>}
+                      {team.region && team.group && <span className="text-slate-500">•</span>}
+                      {team.group && <span>Group <span className="font-medium text-blue-300">{team.group}</span></span>}
+                      {!team.region && !team.group && "No additional info"}
+                    </>
+                  )}
+                </div>
               </div>
             ))
           )}
