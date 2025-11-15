@@ -1,6 +1,6 @@
 import { useAuth } from '../contexts/AuthContext';
 import { Navigate, Link, Outlet, useLocation } from 'react-router-dom'; 
-import { Settings, LayoutDashboard, ListTree } from 'lucide-react';
+import { Settings, LayoutDashboard, ListTree, Users, Trophy } from 'lucide-react';
 
 function AdminDashboard() {
   const { user, isAdmin, loading } = useAuth();
@@ -10,31 +10,29 @@ function AdminDashboard() {
     return <div className="text-white text-center py-12">Se încarcă setările de admin...</div>;
   }
 
-  // Dacă nu este admin SAU nu este logat, redirecționează
   if (!user || !isAdmin) {
-    return <Navigate to="/" replace />; // Redirecționează la pagina principală
+    return <Navigate to="/" replace />;
   }
 
   return (
     <div className="min-h-screen bg-slate-900 text-white">
-      <div className="bg-slate-800 border-b border-slate-700 px-6 py-4">
-        <h1 className="text-3xl font-bold flex items-center gap-3">
-          <LayoutDashboard className="w-8 h-8 text-blue-500" />
+      <header className="bg-gradient-to-r from-blue-800 to-slate-900 shadow-lg px-8 py-6">
+        <h1 className="text-4xl font-extrabold flex items-center gap-4">
+          <LayoutDashboard className="w-10 h-10 text-white" />
           Dashboard Administrator
         </h1>
-        <p className="text-slate-400 mt-1">Manage your tournament settings and data.</p>
-      </div>
+        <p className="text-blue-200 mt-2 text-lg">Manage your tournament settings and data with ease.</p>
+      </header>
 
       <div className="flex">
-        <div className="w-64 bg-slate-800 min-h-screen border-r border-slate-700 p-4">
-          <nav className="space-y-2">
-            {/* Navigare între secțiunile de admin */}
+        <aside className="w-72 bg-slate-800 min-h-[calc(100vh-120px)] border-r border-slate-700 p-6 shadow-xl">
+          <nav className="space-y-3">
             <Link 
               to="/admin" 
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+              className={`w-full flex items-center gap-4 px-5 py-3 rounded-xl transition-all duration-200 ${
                 location.pathname === '/admin'
-                  ? 'bg-blue-600 text-white'
-                  : 'text-slate-300 hover:bg-slate-700'
+                  ? 'bg-blue-600 text-white shadow-md'
+                  : 'text-slate-300 hover:bg-slate-700 hover:text-white'
               }`}
             >
               <Settings className="w-5 h-5" />
@@ -42,22 +40,43 @@ function AdminDashboard() {
             </Link>
             <Link 
               to="/admin/matches" 
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+              className={`w-full flex items-center gap-4 px-5 py-3 rounded-xl transition-all duration-200 ${
                 location.pathname === '/admin/matches'
-                  ? 'bg-blue-600 text-white'
-                  : 'text-slate-300 hover:bg-slate-700'
+                  ? 'bg-blue-600 text-white shadow-md'
+                  : 'text-slate-300 hover:bg-slate-700 hover:text-white'
               }`}
             >
               <ListTree className="w-5 h-5" />
               Gestionare Meciuri
             </Link>
-            {/* Poți adăuga și alte sub-rute: <Link to="/admin/teams">Gestionare Echipe</Link> */}
+            {/* Example for other admin sub-routes */}
+            <Link 
+              to="/admin/teams" 
+              className={`w-full flex items-center gap-4 px-5 py-3 rounded-xl transition-all duration-200 ${
+                location.pathname === '/admin/teams'
+                  ? 'bg-blue-600 text-white shadow-md'
+                  : 'text-slate-300 hover:bg-slate-700 hover:text-white'
+              }`}
+            >
+              <Users className="w-5 h-5" />
+              Gestionare Echipe
+            </Link>
+            <Link 
+              to="/admin/tournaments" 
+              className={`w-full flex items-center gap-4 px-5 py-3 rounded-xl transition-all duration-200 ${
+                location.pathname === '/admin/tournaments'
+                  ? 'bg-blue-600 text-white shadow-md'
+                  : 'text-slate-300 hover:bg-slate-700 hover:text-white'
+              }`}
+            >
+              <Trophy className="w-5 h-5" />
+              Gestionare Turnee
+            </Link>
           </nav>
-        </div>
-        <div className="flex-1 p-6">
-          {/* Aici se va randa conținutul specific (e.g., MatchesAdmin sau AdminPanel) */}
+        </aside>
+        <main className="flex-1 p-8 bg-slate-900">
           <Outlet /> 
-        </div>
+        </main>
       </div>
     </div>
   );
