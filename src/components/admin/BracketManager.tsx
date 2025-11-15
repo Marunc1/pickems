@@ -1,0 +1,263 @@
+import { useState } from 'react';
+import { supabase, type Tournament, type Team } from '../../lib/supabase';
+import { Save, Trophy, ArrowRight } from 'lucide-react';
+
+interface BracketMatch {
+  id: string;
+  team1_id?: string;
+  team2_id?: string;
+  team1_score: number;
+  team2_score: number;
+  winner_id?: string;
+  round: string;
+  match_number: number;
+  next_match_id?: string;
+}
+
+export default function BracketManager({ tournament, onRefresh }: { tournament: Tournament; onRefresh: () => void }) {
+  const [bracket, setBracket] = useState<BracketMatch[]>((tournament.bracket_data as any)?.matches || []);
+  const teams = tournament.teams || [];
+
+  function initializeBracket() {
+    const newBracket: BracketMatch[] = [];
+
+    const rounds = [
+      { name: 'quarterfinals', matches: 4 },
+      { name: 'semifinals', matches: 2 },
+      { name: 'finals', matches: 1 }
+    ];
+
+    rounds.forEach((round) => {
+      for (let i = 0; i < round.matches; i++) {
+        newBracket.push({
+          id: `${round.name}_${i}`,
+          match_number: i + 1,
+          round: round.name,
+          team1_score: 0,
+          team2_score: 0
+        });
+      }
+    });
+
+    setBracket(newBracket);
+  }
+
+  function updateMatch(matchId: string, updates: Partial<BracketMatch>) {
+    setBracket(bracket.map(m => {
+      if (m.id === matchId) {
+        const updated = { ...m, ...updates };
+        if (updated.team1_score > updated.team2_score && updated.team1_id) {
+          updated.winner_id = updated.team1_id;
+        } else if (updated.team2_score > updated.team1_score && updated.team2_id) {
+          updated.winner_id = updated.team2_id;
+        }
+        return updated;
+      }
+      return m;
+    }));
+  }
+
+  async function saveBracket() {
+    try {
+      const { error } = await supabase
+        .from('tournament_settings')
+        .update({ bracket_data: { matches: bracket } })
+        .eq('id', tournament.id);
+
+      if (error) throw error;
+      onRefresh();
+      alert('Bracket saved successfully!');
+    } catch (error) {
+      console.error('Error saving bracket:', error);
+      alert('Error saving bracket');
+    }
+  }
+
+  function getTeamById(id?: string) {
+    if (!id) return null;
+    return teams.find((t: Team) => t.id === id);
+  }
+
+  function getRoundMatches(roundName: string) {
+    return bracket.filter(m => m.round === roundName).sort((a, b) => a.match_number - b.match_number);
+  }
+
+  function getRoundName(round: string) {
+    switch (round) {
+      case 'quarterfinals': return 'Quarter Finals';
+      case 'semifinals': return 'Semi Finals';
+      case 'finals': return 'Finals';
+      default: return round;
+    }
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-slate-800 rounded-xl p-6 border border-slate-700">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+            <Trophy className="w-8 h-8 text-yellow-500" />
+            Bracket Manager
+          </h2>
+          <div className="flex gap-3">
+            {bracket.length === 0 && (
+              <button
+                onClick={initializeBracket}
+                className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition-colors"
+              >
+                Initialize Bracket
+              </button>
+            )}
+            <button
+              onClick={saveBracket}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors flex items-center gap-2"
+            >
+              <Save className="w-5 h-5" />
+              Save Bracket
+            </button>
+          </div>
+        </div>
+
+        {bracket.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-slate-400 text-lg mb-4">No bracket created yet.</p>
+            <p className="text-slate-500 text-sm">Click "Initialize Bracket" to create the playoff structure.</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <div className="flex gap-8 min-w-max">
+              {['quarterfinals', 'semifinals', 'finals'].map((round) => {
+                const roundMatches = getRoundMatches(round);
+                if (roundMatches.length === 0) return null;
+
+                return (
+                  <div key={round} className="flex-shrink-0">
+                    <h3 className="text-xl font-bold text-white mb-4 text-center">
+                      {getRoundName(round)}
+                    </h3>
+                    <div className="space-y-6">
+                      {roundMatches.map((match) => (
+                        <BracketMatchCard
+                          key={match.id}
+                          match={match}
+                          teams={teams}
+                          onUpdate={(updates) => updateMatch(match.id, updates)}
+                          getTeamById={getTeamById}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="bg-slate-800 rounded-xl p-6 border border-slate-700">
+        <h3 className="text-xl font-bold text-white mb-4">Available Teams</h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+          {teams.map((team: Team) => (
+            <div key={team.id} className="bg-slate-700 p-3 rounded-lg flex items-center gap-2">
+              <span className="text-2xl">{team.logo}</span>
+              <div>
+                <div className="text-white font-medium text-sm">{team.name}</div>
+                <div className="text-slate-400 text-xs">{team.region}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+        {teams.length === 0 && (
+          <p className="text-slate-400">No teams available. Add teams first in the Teams tab.</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function BracketMatchCard({
+  match,
+  teams,
+  onUpdate,
+  getTeamById
+}: {
+  match: BracketMatch;
+  teams: Team[];
+  onUpdate: (updates: Partial<BracketMatch>) => void;
+  getTeamById: (id?: string) => Team | null;
+}) {
+  const team1 = getTeamById(match.team1_id);
+  const team2 = getTeamById(match.team2_id);
+
+  return (
+    <div className="bg-slate-700 rounded-lg p-4 w-80 border-2 border-slate-600 hover:border-slate-500 transition-colors">
+      <div className="text-slate-400 text-xs font-semibold mb-3 text-center">
+        Match {match.match_number}
+      </div>
+
+      <div className="space-y-3">
+        <div className={`flex items-center justify-between p-3 rounded ${
+          match.winner_id === match.team1_id ? 'bg-green-900/30 border-2 border-green-600' : 'bg-slate-600'
+        }`}>
+          <select
+            value={match.team1_id || ''}
+            onChange={(e) => onUpdate({ team1_id: e.target.value })}
+            className="flex-1 bg-slate-800 border border-slate-500 rounded px-2 py-1 text-white text-sm mr-2"
+          >
+            <option value="">Select Team 1</option>
+            {teams.map((team: Team) => (
+              <option key={team.id} value={team.id}>
+                {team.logo} {team.name}
+              </option>
+            ))}
+          </select>
+          <input
+            type="number"
+            min="0"
+            value={match.team1_score}
+            onChange={(e) => onUpdate({ team1_score: parseInt(e.target.value) || 0 })}
+            className="w-14 px-2 py-1 bg-slate-800 border border-slate-500 rounded text-white text-center font-bold"
+          />
+        </div>
+
+        <div className="flex justify-center">
+          <span className="text-slate-400 text-sm font-semibold">VS</span>
+        </div>
+
+        <div className={`flex items-center justify-between p-3 rounded ${
+          match.winner_id === match.team2_id ? 'bg-green-900/30 border-2 border-green-600' : 'bg-slate-600'
+        }`}>
+          <select
+            value={match.team2_id || ''}
+            onChange={(e) => onUpdate({ team2_id: e.target.value })}
+            className="flex-1 bg-slate-800 border border-slate-500 rounded px-2 py-1 text-white text-sm mr-2"
+          >
+            <option value="">Select Team 2</option>
+            {teams.map((team: Team) => (
+              <option key={team.id} value={team.id}>
+                {team.logo} {team.name}
+              </option>
+            ))}
+          </select>
+          <input
+            type="number"
+            min="0"
+            value={match.team2_score}
+            onChange={(e) => onUpdate({ team2_score: parseInt(e.target.value) || 0 })}
+            className="w-14 px-2 py-1 bg-slate-800 border border-slate-500 rounded text-white text-center font-bold"
+          />
+        </div>
+      </div>
+
+      {match.winner_id && (
+        <div className="mt-3 pt-3 border-t border-slate-600">
+          <div className="flex items-center justify-center gap-2 text-green-400 font-semibold text-sm">
+            <Trophy className="w-4 h-4" />
+            Winner: {getTeamById(match.winner_id)?.name}
+            <ArrowRight className="w-4 h-4" />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

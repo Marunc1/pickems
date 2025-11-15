@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { supabase, type Tournament, type Team } from '../../lib/supabase';
-import { Settings, Users, Trophy, Save, Plus, Trash2 } from 'lucide-react';
+import { Settings, Users, Trophy, Save, Plus, Trash2, Grid3x3, ListTree } from 'lucide-react';
+import GroupsManager from './GroupsManager';
+import BracketManager from './BracketManager';
 
 export default function AdminPanel() {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [selectedTournament, setSelectedTournament] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'tournaments' | 'teams' | 'settings'>('tournaments');
+  const [activeTab, setActiveTab] = useState<'tournaments' | 'teams' | 'groups' | 'bracket' | 'settings'>('tournaments');
 
   useEffect(() => {
     loadTournaments();
@@ -41,6 +43,19 @@ export default function AdminPanel() {
             <Settings className="w-8 h-8 text-blue-500" />
             Admin Panel
           </h1>
+          {tournaments.length > 0 && (
+            <select
+              value={selectedTournament || ''}
+              onChange={(e) => setSelectedTournament(e.target.value)}
+              className="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white font-semibold"
+            >
+              {tournaments.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name} ({t.status})
+                </option>
+              ))}
+            </select>
+          )}
         </div>
       </div>
 
@@ -70,6 +85,28 @@ export default function AdminPanel() {
               Teams
             </button>
             <button
+              onClick={() => setActiveTab('groups')}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                activeTab === 'groups'
+                  ? 'bg-blue-600 text-white'
+                  : 'text-slate-300 hover:bg-slate-700'
+              }`}
+            >
+              <Grid3x3 className="w-5 h-5" />
+              Groups
+            </button>
+            <button
+              onClick={() => setActiveTab('bracket')}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                activeTab === 'bracket'
+                  ? 'bg-blue-600 text-white'
+                  : 'text-slate-300 hover:bg-slate-700'
+              }`}
+            >
+              <ListTree className="w-5 h-5" />
+              Bracket
+            </button>
+            <button
               onClick={() => setActiveTab('settings')}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                 activeTab === 'settings'
@@ -97,6 +134,12 @@ export default function AdminPanel() {
               )}
               {activeTab === 'teams' && tournament && (
                 <TeamManager tournament={tournament} onRefresh={loadTournaments} />
+              )}
+              {activeTab === 'groups' && tournament && (
+                <GroupsManager tournament={tournament} onRefresh={loadTournaments} />
+              )}
+              {activeTab === 'bracket' && tournament && (
+                <BracketManager tournament={tournament} onRefresh={loadTournaments} />
               )}
               {activeTab === 'settings' && <SettingsManager />}
             </>
