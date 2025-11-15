@@ -1,13 +1,10 @@
 import { Trophy, TrendingUp, Settings, LogOut } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
-interface NavigationProps {
-  currentView: 'pickems' | 'leaderboard' | 'admin';
-  onViewChange: (view: 'pickems' | 'leaderboard' | 'admin') => void;
-}
-
-export default function Navigation({ currentView, onViewChange }: NavigationProps) {
+export default function Navigation() {
   const { user, isAdmin, signOut } = useAuth();
+  const location = useLocation();
 
   async function handleSignOut() {
     try {
@@ -25,41 +22,44 @@ export default function Navigation({ currentView, onViewChange }: NavigationProp
             <div className="text-xl font-bold text-white flex items-center gap-2">
               League Of Loolish E3 Pick'ems
             </div>
+            <Link to="/" className="text-xl font-bold text-white flex items-center gap-2 hover:text-blue-400 transition-colors">
+              League Of Loolish E3 Pick'ems
+            </Link>
             <div className="flex gap-2">
-              <button
-                onClick={() => onViewChange('pickems')}
+              <Link
+                to="/"
                 className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
-                  currentView === 'pickems'
+                  location.pathname === '/'
                     ? 'bg-blue-600 text-white'
                     : 'text-slate-300 hover:bg-slate-700'
                 }`}
               >
                 <Trophy className="w-4 h-4" />
                 Pick'ems
-              </button>
-              <button
-                onClick={() => onViewChange('leaderboard')}
+              </Link>
+              <Link
+                to="/leaderboard"
                 className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
-                  currentView === 'leaderboard'
+                  location.pathname === '/leaderboard'
                     ? 'bg-blue-600 text-white'
                     : 'text-slate-300 hover:bg-slate-700'
                 }`}
               >
                 <TrendingUp className="w-4 h-4" />
                 Leaderboard
-              </button>
+              </Link>
               {isAdmin && (
-                <button
-                  onClick={() => onViewChange('admin')}
+                <Link
+                  to="/admin"
                   className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
-                    currentView === 'admin'
+                    location.pathname === '/admin'
                       ? 'bg-blue-600 text-white'
                       : 'text-slate-300 hover:bg-slate-700'
                   }`}
                 >
                   <Settings className="w-4 h-4" />
                   Admin
-                </button>
+                </Link>
               )}
             </div>
           </div>

@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Auth from './components/Auth';
 import Navigation from './components/Navigation';
@@ -25,8 +26,15 @@ function AppRoutes() {
 }
 
 function AppContent() {
-  const { user, loading } = useAuth();
-  const [currentView, setCurrentView] = useState<'pickems' | 'leaderboard' | 'admin'>('pickems');
+  const { user, loading, isAdmin } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading && user && location.pathname === '/admin' && !isAdmin) {
+      navigate('/');
+    }
+  }, [user, loading, isAdmin, location.pathname, navigate]);
 
   if (loading) {
     return (
@@ -40,21 +48,28 @@ function AppContent() {
     return <Auth />;
   }
 
+  const isAdminRoute = location.pathname === '/admin';
+
   return (
     <div className="min-h-screen bg-slate-900">
-      <Navigation currentView={currentView} onViewChange={setCurrentView} />
-      {currentView === 'pickems' && <PickemsView />}
-      {currentView === 'leaderboard' && <Leaderboard />}
-      {currentView === 'admin' && <AdminPanel />}
+      {!isAdminRoute && <Navigation />}
+      <Routes>
+        <Route path="/" element={<PickemsView />} />
+        <Route path="/leaderboard" element={<Leaderboard />} />
+        <Route path="/admin" element={isAdmin ? <AdminPanel /> : <Navigate to="/" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </div>
   );
 }
 
 function App() {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <BrowserRouter>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </BrowserRouter>
   );
 }
 
