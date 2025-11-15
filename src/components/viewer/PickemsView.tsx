@@ -198,9 +198,11 @@ function GroupStagePickems({
                   onClick={() => handleQualifierToggle(group, team.id)}
                 >
                   <div className="flex items-center gap-3">
-                    <span className="text-3xl">{team.logo}</span> {/* Removed || '❓' */}
+                    <span className="text-3xl">{team.logo}</span>
                     <div>
-                      <h3 className="text-white font-semibold">{team.name}</h3>
+                      <h3 className="text-white font-semibold">
+                        {team.name} {team.tag && <span className="text-blue-300 text-sm ml-1">({team.tag})</span>}
+                      </h3>
                       <p className="text-slate-400 text-sm">{team.region || 'N/A'}</p>
                     </div>
                   </div>
