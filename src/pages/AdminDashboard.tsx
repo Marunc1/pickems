@@ -1,8 +1,8 @@
 import { useAuth } from '../contexts/AuthContext';
 import { Navigate, Link, Outlet, useLocation } from 'react-router-dom'; 
-import { Settings, LayoutDashboard, ListTree, Users, Trophy } from 'lucide-react';
+import { Settings, LayoutDashboard } from 'lucide-react'; // Am eliminat ListTree, Users, Trophy
 import { useState, useEffect } from 'react';
-import { supabase, type Tournament } from '../lib/supabase'; // Importăm Tournament type
+import { supabase, type Tournament } from '../lib/supabase';
 
 function AdminDashboard() {
   const { user, isAdmin, loading: authLoading } = useAuth();
@@ -75,40 +75,7 @@ function AdminDashboard() {
               <Settings className="w-5 h-5" />
               General Admin Panel
             </Link>
-            <Link 
-              to="/admin/matches" 
-              className={`w-full flex items-center gap-4 px-5 py-3 rounded-xl transition-all duration-200 ${
-                location.pathname === '/admin/matches'
-                  ? 'bg-blue-600 text-white shadow-md'
-                  : 'text-slate-300 hover:bg-slate-700 hover:text-white'
-              }`}
-            >
-              <ListTree className="w-5 h-5" />
-              Gestionare Meciuri
-            </Link>
-            {/* Example for other admin sub-routes */}
-            <Link 
-              to="/admin/teams" 
-              className={`w-full flex items-center gap-4 px-5 py-3 rounded-xl transition-all duration-200 ${
-                location.pathname === '/admin/teams'
-                  ? 'bg-blue-600 text-white shadow-md'
-                  : 'text-slate-300 hover:bg-slate-700 hover:text-white'
-              }`}
-            >
-              <Users className="w-5 h-5" />
-              Gestionare Echipe
-            </Link>
-            <Link 
-              to="/admin/tournaments" 
-              className={`w-full flex items-center gap-4 px-5 py-3 rounded-xl transition-all duration-200 ${
-                location.pathname === '/admin/tournaments'
-                  ? 'bg-blue-600 text-white shadow-md'
-                  : 'text-slate-300 hover:bg-slate-700 hover:text-white'
-              }`}
-            >
-              <Trophy className="w-5 h-5" />
-              Gestionare Turnee
-            </Link>
+            {/* Am eliminat link-urile directe către sub-pagini de administrare */}
           </nav>
         </aside>
         <main className="flex-1 p-8 bg-slate-900">

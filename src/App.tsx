@@ -7,7 +7,6 @@ import PickemsView from './components/viewer/PickemsView';
 import Leaderboard from './components/viewer/Leaderboard';
 import AdminPanel from './components/admin/AdminPanel';
 import AdminDashboard from './pages/AdminDashboard'; 
-import MatchesAdmin from './pages/admin/MatchesAdmin';
 import { type Tournament } from './lib/supabase'; // Importăm Tournament type
 
 // Definirea tipului pentru contextul Outlet
@@ -53,19 +52,12 @@ function AppContent() {
         {/* Nested admin routes */}
         <Route path="/admin" element={<AdminDashboard />}>
           <Route index element={<AdminPanel />} /> {/* Default child route for /admin */}
-          <Route path="matches" element={<MatchesAdminWrapper />} /> {/* Folosim un wrapper */}
-          {/* Add other admin sub-routes here if needed */}
+          {/* Am eliminat ruta separată pentru MatchesAdmin */}
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </div>
   );
-}
-
-// Wrapper pentru MatchesAdmin pentru a extrage contextul
-function MatchesAdminWrapper() {
-  const { selectedTournamentId } = useOutletContext<OutletContextType>();
-  return <MatchesAdmin selectedTournamentId={selectedTournamentId} />;
 }
 
 function App() {
