@@ -303,12 +303,15 @@ function TeamManager({ tournament, onRefresh }: { tournament: Tournament; onRefr
         .update({ teams })
         .eq('id', tournament.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error saving teams:', error); // More detailed error logging
+        throw error;
+      }
       onRefresh();
       alert('Teams saved successfully!');
     } catch (error) {
       console.error('Error saving teams:', error);
-      alert('Error saving teams');
+      alert('Error saving teams. Check console for details and RLS policies.'); // Updated alert
     }
   }
 
