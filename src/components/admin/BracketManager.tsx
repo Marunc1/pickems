@@ -50,6 +50,11 @@ export default function BracketManager({ tournament, onRefresh, eligibleTeams }:
     if (numTeams > 0) { // For 1-2 teams, only Finals
       roundsConfig.push({ name: 'finals', matches: 1 });
     }
+    
+    // Add 3rd Place Match if there are at least 4 teams (implies semifinals)
+    if (numTeams >= 4) {
+      roundsConfig.push({ name: 'third_place', matches: 1 });
+    }
 
     roundsConfig.forEach((round) => {
       for (let i = 0; i < round.matches; i++) {
@@ -115,6 +120,7 @@ export default function BracketManager({ tournament, onRefresh, eligibleTeams }:
       case 'quarterfinals': return 'Quarter Finals';
       case 'semifinals': return 'Semi Finals';
       case 'finals': return 'Finals';
+      case 'third_place': return '3rd Place Match';
       default: return round;
     }
   }
@@ -124,6 +130,7 @@ export default function BracketManager({ tournament, onRefresh, eligibleTeams }:
   if (eligibleTeams.length > 4) roundsToDisplay.push('quarterfinals');
   if (eligibleTeams.length > 2) roundsToDisplay.push('semifinals');
   if (eligibleTeams.length > 0) roundsToDisplay.push('finals');
+  if (eligibleTeams.length >= 4) roundsToDisplay.push('third_place'); // Only show 3rd place if enough teams for semifinals
 
 
   return (
