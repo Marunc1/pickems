@@ -22,7 +22,9 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
   const bracketMatches: BracketMatch[] = (tournament.bracket_data as any)?.matches || [];
   const allTeams: Team[] = tournament.teams || [];
 
-  const slotHeight = 180 + 32; // Card height (180px) + space-y-8 (32px) = 212px
+  const matchCardHeight = 180; // Height of ViewerBracketMatchCard
+  const matchCardGap = 32; // From space-y-8
+  const slotHeight = matchCardHeight + matchCardGap; // Total vertical space for one match slot (212px)
 
   function getTeamById(id?: string) {
     if (!id) return null;
@@ -44,13 +46,14 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
     }
   }
 
+  // Calculates the marginTop for a column of match cards
   const getColumnMarginTop = (roundName: string) => {
     switch (roundName) {
       case 'round_of_16': return 'mt-0';
-      case 'quarterfinals': return `mt-[${slotHeight / 2}px]`; // 106px
-      case 'semifinals': return `mt-[${slotHeight * 1.5}px]`; // 318px
-      case 'finals': return `mt-[${slotHeight * 2.5}px]`; // 530px
-      case 'third_place': return `mt-[${slotHeight * 2.5}px]`; // 530px
+      case 'quarterfinals': return `mt-[${slotHeight / 2}px]`; // Top of QF column aligns with middle of R16 first match
+      case 'semifinals': return `mt-[${slotHeight * 1.5}px]`; // Top of SF column aligns with middle of QF first match
+      case 'finals': return `mt-[${slotHeight * 2.5}px]`; // Top of Finals column aligns with middle of SF first match
+      case 'third_place': return `mt-[${slotHeight * 2.5}px]`; // Same as finals for now
       default: return 'mt-0';
     }
   };
@@ -83,14 +86,14 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
   const hasFinals = bracketMatches.some(m => m.round === 'finals');
   const hasThirdPlace = bracketMatches.some(m => m.round === 'third_place');
 
-  // New function to render a column of connectors
+  // Function to render a column of connectors
   const renderConnectorColumn = (roundIndex: number, isLeftBranch: boolean, numMatchesInPreviousRound: number) => {
     if (numMatchesInPreviousRound === 0) return null;
 
-    const numSegments = numMatchesInPreviousRound / 2;
-    const segments = [];
-    for (let i = 0; i < numSegments; i++) {
-      segments.push(
+    const numConnectors = numMatchesInPreviousRound / 2;
+    const connectors = [];
+    for (let i = 0; i < numConnectors; i++) {
+      connectors.push(
         <BracketRoundConnector
           key={i}
           isLeftBranch={isLeftBranch}
@@ -99,18 +102,19 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
       );
     }
 
+    // Calculate marginTop for the connector column
     let connectorColumnMarginTop = 0;
     if (roundIndex === 0) { // R16 -> QF
-      connectorColumnMarginTop = slotHeight / 2; // Aligns with the top of the QF match column
+      connectorColumnMarginTop = matchCardHeight / 2; // Aligns top of connector column with center of first R16 match
     } else if (roundIndex === 1) { // QF -> SF
-      connectorColumnMarginTop = slotHeight * 1.5; // Aligns with the top of the SF match column
+      connectorColumnMarginTop = matchCardHeight / 2 + slotHeight; // Aligns top of connector column with center of first QF match
     } else if (roundIndex === 2) { // SF -> Finals
-      connectorColumnMarginTop = slotHeight * 2.5; // Aligns with the top of the Finals match column
+      connectorColumnMarginTop = matchCardHeight / 2 + slotHeight * 2; // Aligns top of connector column with center of first SF match
     }
 
     return (
       <div className={`flex flex-col items-center`} style={{ marginTop: `${connectorColumnMarginTop}px` }}>
-        {segments}
+        {connectors}
       </div>
     );
   };
