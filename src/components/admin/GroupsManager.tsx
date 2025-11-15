@@ -18,7 +18,8 @@ export default function GroupsManager({ tournament, onRefresh }: { tournament: T
   const [matches, setMatches] = useState<Match[]>((tournament.matches as Match[]) || []);
   const [selectedGroup, setSelectedGroup] = useState('A');
   const teams = tournament.teams || [];
-  const groups = ['A', 'B', 'C', 'D'];
+  // Extindem grupele la 8
+  const groups = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
 
   const groupTeams = teams.filter((team: Team) => team.group === selectedGroup);
 
@@ -91,12 +92,12 @@ export default function GroupsManager({ tournament, onRefresh }: { tournament: T
           </button>
         </div>
 
-        <div className="flex gap-2 mb-6">
+        <div className="flex gap-2 mb-6 overflow-x-auto pb-2"> {/* Added overflow-x-auto for responsiveness */}
           {groups.map(group => (
             <button
               key={group}
               onClick={() => setSelectedGroup(group)}
-              className={`px-6 py-3 rounded-lg font-semibold transition-colors ${
+              className={`px-6 py-3 rounded-lg font-semibold transition-colors flex-shrink-0 ${ // Added flex-shrink-0
                 selectedGroup === group
                   ? 'bg-blue-600 text-white'
                   : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
