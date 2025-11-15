@@ -116,10 +116,10 @@ export default function GroupsManager({ tournament, onRefresh }: { tournament: T
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {groupTeams.map((team: Team) => (
               <div key={team.id} className="bg-slate-600 p-3 rounded-lg flex items-center gap-2">
-                <span className="text-2xl">{team.logo}</span>
+                <span className="text-2xl">{team.logo || '❓'}</span> {/* Fallback for missing logo */}
                 <div>
                   <div className="text-white font-medium text-sm">{team.name}</div>
-                  <div className="text-slate-300 text-xs">{team.region}</div>
+                  <div className="text-slate-300 text-xs">{team.region || 'N/A'}</div> {/* Fallback for missing region */}
                 </div>
               </div>
             ))}
@@ -153,7 +153,7 @@ export default function GroupsManager({ tournament, onRefresh }: { tournament: T
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-4 flex-1">
                     <div className="flex items-center gap-2 flex-1">
-                      <span className="text-2xl">{team1?.logo}</span>
+                      <span className="text-2xl">{team1?.logo || '❓'}</span>
                       <span className="text-white font-semibold">{team1?.name}</span>
                     </div>
                     <input
@@ -174,7 +174,7 @@ export default function GroupsManager({ tournament, onRefresh }: { tournament: T
                       className="w-16 px-3 py-2 bg-slate-600 border border-slate-500 rounded text-white text-center font-bold"
                     />
                     <div className="flex items-center gap-2 flex-1">
-                      <span className="text-2xl">{team2?.logo}</span>
+                      <span className="text-2xl">{team2?.logo || '❓'}</span>
                       <span className="text-white font-semibold">{team2?.name}</span>
                     </div>
                   </div>

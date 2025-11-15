@@ -269,24 +269,27 @@ function TournamentManager({
 
 function TeamManager({ tournament, onRefresh }: { tournament: Tournament; onRefresh: () => void }) {
   const [teams, setTeams] = useState<Team[]>(tournament.teams || []);
-  const [newTeam, setNewTeam] = useState({ name: '', tag: '', region: '', logo: '🏆', group: 'A' }); // Added tag to newTeam state
-  const groups = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+  const [newTeam, setNewTeam] = useState({ name: '', tag: '' }); // Removed region, logo, group from initial state
+  const groups = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']; // Still needed for group selection later
 
   useEffect(() => {
     setTeams(tournament.teams || []);
   }, [tournament.teams]);
 
   function addTeam() {
-    if (!newTeam.name || !newTeam.tag || !newTeam.region || !newTeam.logo) { // Validate tag
-      alert('Please fill in all team details (Name, Tag, Region, Logo).');
+    if (!newTeam.name || !newTeam.tag) { // Only require name and tag
+      alert('Please fill in team Name and Tag.');
       return;
     }
     const team: Team = {
       id: `team_${Date.now()}`,
-      ...newTeam
+      ...newTeam,
+      region: '', // Explicitly set to empty string or undefined
+      logo: '',   // Explicitly set to empty string or undefined
+      group: ''   // Explicitly set to empty string or undefined
     };
     setTeams([...teams, team]);
-    setNewTeam({ name: '', tag: '', region: '', logo: '🏆', group: 'A' }); // Reset tag
+    setNewTeam({ name: '', tag: '' }); // Reset state
   }
 
   function removeTeam(id: string) {
@@ -316,8 +319,8 @@ function TeamManager({ tournament, onRefresh }: { tournament: Tournament; onRefr
           <Plus className="w-7 h-7 text-green-500" />
           Add New Team
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-6 gap-4 items-end"> {/* Adjusted grid columns */}
-          <div className="md:col-span-2">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end"> {/* Adjusted grid columns */}
+          <div className="md:col-span-1">
             <label htmlFor="team-name" className="block text-sm font-medium text-slate-300 mb-2">Team Name</label>
             <input
               id="team-name"
@@ -329,7 +332,7 @@ function TeamManager({ tournament, onRefresh }: { tournament: Tournament; onRefr
             />
           </div>
           <div>
-            <label htmlFor="team-tag" className="block text-sm font-medium text-slate-300 mb-2">Tag</label> {/* New input for tag */}
+            <label htmlFor="team-tag" className="block text-sm font-medium text-slate-300 mb-2">Tag</label>
             <input
               id="team-tag"
               type="text"
@@ -339,41 +342,8 @@ function TeamManager({ tournament, onRefresh }: { tournament: Tournament; onRefr
               className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
-          <div>
-            <label htmlFor="team-region" className="block text-sm font-medium text-slate-300 mb-2">Region</label>
-            <input
-              id="team-region"
-              type="text"
-              value={newTeam.region}
-              onChange={(e) => setNewTeam({ ...newTeam, region: e.target.value })}
-              placeholder="e.g., LCK"
-              className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div>
-            <label htmlFor="team-logo" className="block text-sm font-medium text-slate-300 mb-2">Logo (Emoji)</label>
-            <input
-              id="team-logo"
-              type="text"
-              value={newTeam.logo}
-              onChange={(e) => setNewTeam({ ...newTeam, logo: e.target.value })}
-              placeholder="e.g., 🐉"
-              className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div>
-            <label htmlFor="team-group" className="block text-sm font-medium text-slate-300 mb-2">Group</label>
-            <select
-              id="team-group"
-              value={newTeam.group}
-              onChange={(e) => setNewTeam({ ...newTeam, group: e.target.value })}
-              className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              {groups.map(group => (
-                <option key={group} value={group}>Group {group}</option>
-              ))}
-            </select>
-          </div>
+          {/* Removed Region and Logo inputs */}
+          {/* Removed Group select from initial add form */}
         </div>
         <button
           onClick={addTeam}
@@ -405,11 +375,13 @@ function TeamManager({ tournament, onRefresh }: { tournament: Tournament; onRefr
                 className="bg-slate-700 p-4 rounded-lg flex items-center justify-between hover:bg-slate-600 transition-colors duration-200 border border-slate-600"
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-3xl">{team.logo}</span>
+                  <span className="text-3xl">{team.logo || '❓'}</span> {/* Fallback for missing logo */}
                   <div>
-                    <h3 className="text-white font-semibold text-lg">{team.name} <span className="text-blue-300 text-sm ml-1">({team.tag})</span></h3> {/* Display tag */}
+                    <h3 className="text-white font-semibold text-lg">{team.name} <span className="text-blue-300 text-sm ml-1">({team.tag})</span></h3>
                     <p className="text-slate-400 text-sm">
-                      {team.region} • Group <span className="font-medium text-blue-300">{team.group}</span>
+                      {team.region && `${team.region} • `} {/* Display region only if it exists */}
+                      {team.group && `Group `}<span className="font-medium text-blue-300">{team.group}</span>
+                      {!team.region && !team.group && "No additional info"} {/* Fallback if both are missing */}
                     </p>
                   </div>
                 </div>

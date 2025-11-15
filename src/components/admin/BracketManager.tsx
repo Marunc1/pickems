@@ -159,10 +159,10 @@ export default function BracketManager({ tournament, onRefresh }: { tournament: 
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
           {teams.map((team: Team) => (
             <div key={team.id} className="bg-slate-700 p-3 rounded-lg flex items-center gap-2">
-              <span className="text-2xl">{team.logo}</span>
+              <span className="text-2xl">{team.logo || '❓'}</span> {/* Fallback for missing logo */}
               <div>
                 <div className="text-white font-medium text-sm">{team.name}</div>
-                <div className="text-slate-400 text-xs">{team.region}</div>
+                <div className="text-slate-400 text-xs">{team.region || 'N/A'}</div> {/* Fallback for missing region */}
               </div>
             </div>
           ))}
@@ -207,7 +207,7 @@ function BracketMatchCard({
             <option value="">Select Team 1</option>
             {teams.map((team: Team) => (
               <option key={team.id} value={team.id}>
-                {team.logo} {team.name}
+                {team.logo || '❓'} {team.name} {team.tag && `(${team.tag})`}
               </option>
             ))}
           </select>
@@ -235,7 +235,7 @@ function BracketMatchCard({
             <option value="">Select Team 2</option>
             {teams.map((team: Team) => (
               <option key={team.id} value={team.id}>
-                {team.logo} {team.name}
+                {team.logo || '❓'} {team.name} {team.tag && `(${team.tag})`}
               </option>
             ))}
           </select>

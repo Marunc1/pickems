@@ -12,10 +12,10 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 export interface Team {
   id: string;
   name: string;
-  tag: string; // Added tag property
-  region: string;
-  logo: string;
-  group?: string;
+  tag: string;
+  region?: string; // Made optional
+  logo?: string;  // Made optional
+  group?: string; // Made optional
 }
 
 export interface Tournament {
