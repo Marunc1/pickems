@@ -84,12 +84,12 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
 
   return (
     <div className="overflow-x-auto pb-4">
-      <div className="flex justify-center min-w-max p-4">
+      <div className="flex justify-start min-w-max p-4"> {/* Changed justify-center to justify-start */}
 
         {/* Left Side */}
         <div className="flex flex-row-reverse items-start">
           {hasSF && sfMatches.left.length > 0 && (
-            <div className={`flex flex-col items-center mx-2 ${getColumnMarginTop('semifinals')}`}> {/* Changed mx-4 to mx-2 */}
+            <div className={`flex flex-col items-center mx-2 ${getColumnMarginTop('semifinals')}`}>
               <h3 className="text-xl font-bold text-white mb-6 text-center whitespace-nowrap">
                 {getRoundName('semifinals')}
               </h3>
@@ -109,7 +109,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
           )}
 
           {hasQF && qfMatches.left.length > 0 && (
-            <div className={`flex flex-col items-center mx-2 ${getColumnMarginTop('quarterfinals')}`}> {/* Changed mx-4 to mx-2 */}
+            <div className={`flex flex-col items-center mx-2 ${getColumnMarginTop('quarterfinals')}`}>
               <h3 className="text-xl font-bold text-white mb-6 text-center whitespace-nowrap">
                 {getRoundName('quarterfinals')}
               </h3>
@@ -129,7 +129,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
           )}
 
           {hasR16 && r16Matches.left.length > 0 && (
-            <div className={`flex flex-col items-center mx-2 ${getColumnMarginTop('round_of_16')}`}> {/* Changed mx-4 to mx-2 */}
+            <div className={`flex flex-col items-center mx-2 ${getColumnMarginTop('round_of_16')}`}>
               <h3 className="text-xl font-bold text-white mb-6 text-center whitespace-nowrap">
                 {getRoundName('round_of_16')}
               </h3>
@@ -150,7 +150,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
         </div>
 
         {/* Middle (Finals & 3rd Place) */}
-        <div className={`flex flex-col items-center mx-2 ${getColumnMarginTop('finals')}`}> {/* Changed mx-4 to mx-2 */}
+        <div className={`flex flex-col items-center mx-2 ${getColumnMarginTop('finals')}`}>
           {hasFinals && finalsMatches.length > 0 && (
             <>
               <h3 className="text-xl font-bold text-white mb-6 text-center whitespace-nowrap">
@@ -194,7 +194,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
         {/* Right Side */}
         <div className="flex items-start">
           {hasSF && sfMatches.right.length > 0 && (
-            <div className={`flex flex-col items-center mx-2 ${getColumnMarginTop('semifinals')}`}> {/* Changed mx-4 to mx-2 */}
+            <div className={`flex flex-col items-center mx-2 ${getColumnMarginTop('semifinals')}`}>
               <h3 className="text-xl font-bold text-white mb-6 text-center whitespace-nowrap">
                 {getRoundName('semifinals')}
               </h3>
@@ -214,7 +214,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
           )}
 
           {hasQF && qfMatches.right.length > 0 && (
-            <div className={`flex flex-col items-center mx-2 ${getColumnMarginTop('quarterfinals')}`}> {/* Changed mx-4 to mx-2 */}
+            <div className={`flex flex-col items-center mx-2 ${getColumnMarginTop('quarterfinals')}`}>
               <h3 className="text-xl font-bold text-white mb-6 text-center whitespace-nowrap">
                 {getRoundName('quarterfinals')}
               </h3>
@@ -234,7 +234,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
           )}
 
           {hasR16 && r16Matches.right.length > 0 && (
-            <div className={`flex flex-col items-center mx-2 ${getColumnMarginTop('round_of_16')}`}> {/* Changed mx-4 to mx-2 */}
+            <div className={`flex flex-col items-center mx-2 ${getColumnMarginTop('round_of_16')}`}>
               <h3 className="text-xl font-bold text-white mb-6 text-center whitespace-nowrap">
                 {getRoundName('round_of_16')}
               </h3>
