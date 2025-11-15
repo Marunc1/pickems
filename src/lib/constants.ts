@@ -1,1 +1,0 @@
-export const MAX_QUALIFIERS_PER_GROUP = 2;

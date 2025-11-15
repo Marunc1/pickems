@@ -4,9 +4,9 @@ import { Save, Plus, Trash2, Edit, XCircle, CheckCircle } from 'lucide-react';
 
 export default function TeamManager({ tournament, onRefresh }: { tournament: Tournament; onRefresh: () => void }) {
   const [teams, setTeams] = useState<Team[]>(tournament.teams || []);
-  const [newTeam, setNewTeam] = useState({ name: '', tag: '', region: '', logo: '', group: '' });
+  const [newTeam, setNewTeam] = useState({ name: '', tag: '', region: '', logo: '' }); // Removed group
   const [editingTeamId, setEditingTeamId] = useState<string | null>(null);
-  const groups = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+  // Removed groups array as it's no longer needed
 
   useEffect(() => {
     setTeams(tournament.teams || []);
@@ -22,7 +22,7 @@ export default function TeamManager({ tournament, onRefresh }: { tournament: Tou
       ...newTeam,
     };
     setTeams([...teams, team]);
-    setNewTeam({ name: '', tag: '', region: '', logo: '', group: '' });
+    setNewTeam({ name: '', tag: '', region: '', logo: '' }); // Reset newTeam without group
   }
 
   function removeTeam(id: string) {
@@ -104,18 +104,7 @@ export default function TeamManager({ tournament, onRefresh }: { tournament: Tou
               className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
-          <div>
-            <label htmlFor="new-team-group" className="block text-sm font-medium text-slate-300 mb-2">Group (Optional)</label>
-            <select
-              id="new-team-group"
-              value={newTeam.group}
-              onChange={(e) => setNewTeam({ ...newTeam, group: e.target.value })}
-              className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Select Group</option>
-              {groups.map(g => <option key={g} value={g}>{g}</option>)}
-            </select>
-          </div>
+          {/* Removed Group selection for new team */}
           <div className="md:col-span-3 flex justify-end">
             <button
               onClick={addTeam}
@@ -150,7 +139,7 @@ export default function TeamManager({ tournament, onRefresh }: { tournament: Tou
               >
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-3">
-                    <span className="text-3xl">{team.logo}</span> {/* Removed || '❓' */}
+                    <span className="text-3xl">{team.logo}</span>
                     <div>
                       {editingTeamId === team.id ? (
                         <input
@@ -235,24 +224,12 @@ export default function TeamManager({ tournament, onRefresh }: { tournament: Tou
                         placeholder="Logo"
                         className="bg-slate-600 border border-slate-500 rounded px-2 py-1 text-white text-sm w-16"
                       />
-                      <span className="text-slate-500">•</span>
-                      <label htmlFor={`group-${team.id}`} className="sr-only">Group</label>
-                      <select
-                        id={`group-${team.id}`}
-                        value={team.group || ''}
-                        onChange={(e) => updateTeamField(team.id, 'group', e.target.value)}
-                        className="bg-slate-600 border border-slate-500 rounded px-2 py-1 text-white text-sm w-24"
-                      >
-                        <option value="">No Group</option>
-                        {groups.map(g => <option key={g} value={g}>{g}</option>)}
-                      </select>
+                      {/* Removed Group selection for editing team */}
                     </>
                   ) : (
                     <>
                       {team.region && <span>{team.region}</span>}
-                      {team.region && team.group && <span className="text-slate-500">•</span>}
-                      {team.group && <span>Group <span className="font-medium text-blue-300">{team.group}</span></span>}
-                      {!team.region && !team.group && "No additional info"}
+                      {!team.region && "No additional info"}
                     </>
                   )}
                 </div>

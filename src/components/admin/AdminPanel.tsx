@@ -1,14 +1,12 @@
 import { useState, useEffect } from 'react';
 import { supabase, type Tournament, type Team } from '../../lib/supabase';
 import { Settings, Users, Trophy, Grid3x3, ListTree, LayoutDashboard } from 'lucide-react';
-import GroupsManager from './GroupsManager';
 import BracketManager from './BracketManager';
 import TournamentManager from './TournamentManager';
-import TeamManager from './TeamManager'; // Importăm noul component TeamManager
-import SettingsManager from './SettingsManager'; // Importăm noul component SettingsManager
-import MatchesAdmin from '../../pages/admin/MatchesAdmin'; // Importăm MatchesAdmin
+import TeamManager from './TeamManager';
+import SettingsManager from './SettingsManager';
+import MatchesAdmin from '../../pages/admin/MatchesAdmin';
 import { useOutletContext } from 'react-router-dom';
-import { getQualifiedTeams } from '../../utils/tournamentUtils'; // Importăm utilitarul
 
 // Definirea tipului pentru contextul Outlet
 type OutletContextType = {
@@ -19,17 +17,15 @@ type OutletContextType = {
 };
 
 export default function AdminPanel() {
-  const [activeTab, setActiveTab] = useState<'tournaments' | 'teams' | 'groups' | 'bracket' | 'matches' | 'settings'>('tournaments');
+  const [activeTab, setActiveTab] = useState<'tournaments' | 'teams' | 'bracket' | 'matches' | 'settings'>('tournaments');
 
   // Extragem datele din contextul Outlet
   const { tournaments, selectedTournamentId, setSelectedTournamentId, onRefreshTournaments } = useOutletContext<OutletContextType>();
 
   const tournament = tournaments.find(t => t.id === selectedTournamentId);
 
-  // Calculează echipele calificate dacă există un turneu selectat și suntem pe tab-ul de bracket
-  const qualifiedTeams = tournament && tournament.teams && tournament.matches && activeTab === 'bracket'
-    ? getQualifiedTeams(tournament.teams, tournament.matches as any[])
-    : [];
+  // Acum, toate echipele din turneu sunt considerate eligibile pentru bracket
+  const eligibleTeamsForBracket = tournament?.teams || [];
 
   return (
     <div className="min-h-screen bg-slate-900">
@@ -80,17 +76,7 @@ export default function AdminPanel() {
               <Users className="w-5 h-5" />
               Teams
             </button>
-            <button
-              onClick={() => setActiveTab('groups')}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                activeTab === 'groups'
-                  ? 'bg-blue-600 text-white shadow-md'
-                  : 'text-slate-300 hover:bg-slate-700 hover:text-white'
-              }`}
-            >
-              <Grid3x3 className="w-5 h-5" />
-              Groups
-            </button>
+            {/* Removed Groups tab */}
             <button
               onClick={() => setActiveTab('bracket')}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
@@ -110,7 +96,7 @@ export default function AdminPanel() {
                   : 'text-slate-300 hover:bg-slate-700 hover:text-white'
               }`}
             >
-              <ListTree className="w-5 h-5" /> {/* Reusing ListTree icon for matches */}
+              <ListTree className="w-5 h-5" />
               Matches
             </button>
             <button
@@ -145,14 +131,12 @@ export default function AdminPanel() {
               {activeTab === 'teams' && tournament && (
                 <TeamManager tournament={tournament} onRefresh={onRefreshTournaments} />
               )}
-              {activeTab === 'groups' && tournament && (
-                <GroupsManager tournament={tournament} onRefresh={onRefreshTournaments} />
-              )}
+              {/* Removed GroupsManager */}
               {activeTab === 'bracket' && tournament && (
                 <BracketManager
                   tournament={tournament}
                   onRefresh={onRefreshTournaments}
-                  qualifiedTeams={qualifiedTeams} // Pass qualified teams
+                  eligibleTeams={eligibleTeamsForBracket} // Pass all tournament teams as eligible
                 />
               )}
               {activeTab === 'matches' && tournament && (

@@ -9,21 +9,33 @@ interface Match {
     score_a: number;
     score_b: number;
     status: 'upcoming' | 'live' | 'completed';
-    stage: string;
+    stage: string; // Keep stage, but group will be ignored
 }
 
-export default function MatchesAdmin() {
+interface MatchesAdminProps {
+    selectedTournamentId: string | null;
+}
+
+export default function MatchesAdmin({ selectedTournamentId }: MatchesAdminProps) {
     const [matches, setMatches] = useState<Match[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     const fetchMatches = async () => {
+        if (!selectedTournamentId) {
+            setMatches([]);
+            setLoading(false);
+            return;
+        }
+
         setLoading(true);
         setError(null);
         try {
+            // Fetch matches for the selected tournament
             const { data, error } = await supabase
                 .from('matches')
                 .select('id, team_a, team_b, score_a, score_b, status, stage')
+                .eq('tournament_id', selectedTournamentId) // Filter by tournament_id
                 .order('stage', { ascending: true })
                 .order('created_at', { ascending: true });
 
@@ -59,7 +71,7 @@ export default function MatchesAdmin() {
 
     useEffect(() => {
         fetchMatches();
-    }, []);
+    }, [selectedTournamentId]); // Refetch when selectedTournamentId changes
 
     if (loading) return <div className="text-white text-center py-12">Se încarcă meciurile...</div>;
     if (error) return <div className="text-red-500 text-center py-12">{error}</div>;
