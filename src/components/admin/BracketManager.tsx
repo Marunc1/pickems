@@ -14,9 +14,15 @@ interface BracketMatch {
   next_match_id?: string;
 }
 
-export default function BracketManager({ tournament, onRefresh }: { tournament: Tournament; onRefresh: () => void }) {
+interface BracketManagerProps {
+  tournament: Tournament;
+  onRefresh: () => void;
+  qualifiedTeams: Team[]; // New prop for qualified teams
+}
+
+export default function BracketManager({ tournament, onRefresh, qualifiedTeams }: BracketManagerProps) {
   const [bracket, setBracket] = useState<BracketMatch[]>((tournament.bracket_data as any)?.matches || []);
-  const teams = tournament.teams || [];
+  const allTeams = tournament.teams || []; // Keep allTeams for the "Available Teams" display
 
   function initializeBracket() {
     const newBracket: BracketMatch[] = [];
@@ -75,7 +81,7 @@ export default function BracketManager({ tournament, onRefresh }: { tournament: 
 
   function getTeamById(id?: string) {
     if (!id) return null;
-    return teams.find((t: Team) => t.id === id);
+    return allTeams.find((t: Team) => t.id === id);
   }
 
   function getRoundMatches(roundName: string) {
@@ -140,7 +146,7 @@ export default function BracketManager({ tournament, onRefresh }: { tournament: 
                         <BracketMatchCard
                           key={match.id}
                           match={match}
-                          teams={teams}
+                          teams={qualifiedTeams} // Use qualifiedTeams here
                           onUpdate={(updates) => updateMatch(match.id, updates)}
                           getTeamById={getTeamById}
                         />
@@ -155,19 +161,19 @@ export default function BracketManager({ tournament, onRefresh }: { tournament: 
       </div>
 
       <div className="bg-slate-800 rounded-xl p-6 border border-slate-700">
-        <h3 className="text-xl font-bold text-white mb-4">Available Teams</h3>
+        <h3 className="text-xl font-bold text-white mb-4">Available Teams (All Tournament Teams)</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-          {teams.map((team: Team) => (
+          {allTeams.map((team: Team) => (
             <div key={team.id} className="bg-slate-700 p-3 rounded-lg flex items-center gap-2">
-              <span className="text-2xl">{team.logo}</span> {/* Removed || '❓' */}
+              <span className="text-2xl">{team.logo}</span>
               <div>
                 <div className="text-white font-medium text-sm">{team.name}</div>
-                <div className="text-slate-400 text-xs">{team.region || 'N/A'}</div> {/* Fallback for missing region */}
+                <div className="text-slate-400 text-xs">{team.region || 'N/A'}</div>
               </div>
             </div>
           ))}
         </div>
-        {teams.length === 0 && (
+        {allTeams.length === 0 && (
           <p className="text-slate-400">No teams available. Add teams first in the Teams tab.</p>
         )}
       </div>
@@ -177,7 +183,7 @@ export default function BracketManager({ tournament, onRefresh }: { tournament: 
 
 function BracketMatchCard({
   match,
-  teams,
+  teams, // Now represents qualified teams
   onUpdate,
   getTeamById
 }: {
@@ -205,9 +211,9 @@ function BracketMatchCard({
             className="flex-1 bg-slate-800 border border-slate-500 rounded px-2 py-1 text-white text-sm mr-2"
           >
             <option value="">Select Team 1</option>
-            {teams.map((team: Team) => (
+            {teams.map((team: Team) => ( // Use 'teams' (qualifiedTeams) here
               <option key={team.id} value={team.id}>
-                {team.logo} {team.name} {team.tag && `(${team.tag})`} {/* Removed || '❓' */}
+                {team.logo} {team.name} {team.tag && `(${team.tag})`}
               </option>
             ))}
           </select>
@@ -233,9 +239,9 @@ function BracketMatchCard({
             className="flex-1 bg-slate-800 border border-slate-500 rounded px-2 py-1 text-white text-sm mr-2"
           >
             <option value="">Select Team 2</option>
-            {teams.map((team: Team) => (
+            {teams.map((team: Team) => ( // Use 'teams' (qualifiedTeams) here
               <option key={team.id} value={team.id}>
-                {team.logo} {team.name} {team.tag && `(${team.tag})`} {/* Removed || '❓' */}
+                {team.logo} {team.name} {team.tag && `(${team.tag})`}
               </option>
             ))}
           </select>

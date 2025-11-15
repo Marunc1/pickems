@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { supabase, type Tournament, type Team } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
-import { Trophy, Save, TrendingUp, CheckCircle } from 'lucide-react'; // Adăugăm CheckCircle
+import { Trophy, Save, TrendingUp, CheckCircle } from 'lucide-react';
+import { MAX_QUALIFIERS_PER_GROUP } from '../../lib/constants'; // Importăm constanta
 
 export default function PickemsView() {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
@@ -126,8 +127,6 @@ export default function PickemsView() {
   );
 }
 
-const MAX_QUALIFIERS_PER_GROUP = 2; // Numărul maxim de echipe care se califică per grupă
-
 function GroupStagePickems({
   tournament,
   picks,
@@ -200,10 +199,8 @@ function GroupStagePickems({
                   <div className="flex items-center gap-3">
                     <span className="text-3xl">{team.logo}</span>
                     <div>
-                      <h3 className="text-white font-semibold">
-                        {team.name} {team.tag && <span className="text-blue-300 text-sm ml-1">({team.tag})</span>}
-                      </h3>
-                      {team.region && <p className="text-slate-400 text-sm">{team.region}</p>}
+                      <h3 className="text-white font-semibold">{team.name}</h3>
+                      <p className="text-slate-400 text-sm">{team.region || 'N/A'}</p>
                     </div>
                   </div>
                   {(picks[group] || []).includes(team.id) && (

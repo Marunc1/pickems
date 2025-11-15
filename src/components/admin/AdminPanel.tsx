@@ -8,6 +8,7 @@ import TeamManager from './TeamManager'; // Importăm noul component TeamManager
 import SettingsManager from './SettingsManager'; // Importăm noul component SettingsManager
 import MatchesAdmin from '../../pages/admin/MatchesAdmin'; // Importăm MatchesAdmin
 import { useOutletContext } from 'react-router-dom';
+import { getQualifiedTeams } from '../../utils/tournamentUtils'; // Importăm utilitarul
 
 // Definirea tipului pentru contextul Outlet
 type OutletContextType = {
@@ -24,6 +25,11 @@ export default function AdminPanel() {
   const { tournaments, selectedTournamentId, setSelectedTournamentId, onRefreshTournaments } = useOutletContext<OutletContextType>();
 
   const tournament = tournaments.find(t => t.id === selectedTournamentId);
+
+  // Calculează echipele calificate dacă există un turneu selectat și suntem pe tab-ul de bracket
+  const qualifiedTeams = tournament && tournament.teams && tournament.matches && activeTab === 'bracket'
+    ? getQualifiedTeams(tournament.teams, tournament.matches as any[])
+    : [];
 
   return (
     <div className="min-h-screen bg-slate-900">
@@ -143,7 +149,11 @@ export default function AdminPanel() {
                 <GroupsManager tournament={tournament} onRefresh={onRefreshTournaments} />
               )}
               {activeTab === 'bracket' && tournament && (
-                <BracketManager tournament={tournament} onRefresh={onRefreshTournaments} />
+                <BracketManager
+                  tournament={tournament}
+                  onRefresh={onRefreshTournaments}
+                  qualifiedTeams={qualifiedTeams} // Pass qualified teams
+                />
               )}
               {activeTab === 'matches' && tournament && (
                 <MatchesAdmin selectedTournamentId={selectedTournamentId} />
