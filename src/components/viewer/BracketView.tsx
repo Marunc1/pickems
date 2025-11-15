@@ -1,7 +1,7 @@
 import React from 'react';
 import { type Tournament, type Team } from '../../lib/supabase';
 import ViewerBracketMatchCard from './ViewerBracketMatchCard';
-import BracketRoundConnector from './BracketRoundConnector'; // Import the new connector component
+import BracketRoundConnector from './BracketRoundConnector';
 
 interface BracketMatch {
   id: string;
@@ -85,7 +85,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
 
   return (
     <div className="overflow-x-auto pb-4">
-      <div className="flex justify-start min-w-max p-4 gap-x-2">
+      <div className="flex justify-start min-w-max p-4 gap-x-16"> {/* Increased gap-x for connectors */}
 
         {/* Left Side Rounds (R16, QF, SF) */}
         {hasR16 && r16Matches.left.length > 0 && (
@@ -102,7 +102,6 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
                   userPick={userPicks[match.id]}
                   onPick={(pickedTeamId) => onPicksChange({ ...userPicks, [match.id]: pickedTeamId })}
                   getTeamById={getTeamById}
-                  isLeftBranch={true}
                 />
               ))}
             </div>
@@ -112,7 +111,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
           <BracketRoundConnector
             roundIndex={0}
             isLeftBranch={true}
-            numMatchesInCurrentRound={r16Matches.left.length}
+            numMatchesInPreviousRound={r16Matches.left.length}
             slotHeight={slotHeight}
           />
         )}
@@ -131,7 +130,6 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
                   userPick={userPicks[match.id]}
                   onPick={(pickedTeamId) => onPicksChange({ ...userPicks, [match.id]: pickedTeamId })}
                   getTeamById={getTeamById}
-                  isLeftBranch={true}
                 />
               ))}
             </div>
@@ -141,7 +139,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
           <BracketRoundConnector
             roundIndex={1}
             isLeftBranch={true}
-            numMatchesInCurrentRound={qfMatches.left.length}
+            numMatchesInPreviousRound={qfMatches.left.length}
             slotHeight={slotHeight}
           />
         )}
@@ -160,7 +158,6 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
                   userPick={userPicks[match.id]}
                   onPick={(pickedTeamId) => onPicksChange({ ...userPicks, [match.id]: pickedTeamId })}
                   getTeamById={getTeamById}
-                  isLeftBranch={true}
                 />
               ))}
             </div>
@@ -170,7 +167,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
           <BracketRoundConnector
             roundIndex={2}
             isLeftBranch={true}
-            numMatchesInCurrentRound={sfMatches.left.length}
+            numMatchesInPreviousRound={sfMatches.left.length}
             slotHeight={slotHeight}
           />
         )}
@@ -190,7 +187,6 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
                   userPick={userPicks[match.id]}
                   onPick={(pickedTeamId) => onPicksChange({ ...userPicks, [match.id]: pickedTeamId })}
                   getTeamById={getTeamById}
-                  isFinalMatch={true} // No outgoing lines for the final match
                 />
               ))}
             </div>
@@ -201,7 +197,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
           <BracketRoundConnector
             roundIndex={2}
             isLeftBranch={false} // Right branch
-            numMatchesInCurrentRound={sfMatches.right.length}
+            numMatchesInPreviousRound={sfMatches.right.length}
             slotHeight={slotHeight}
           />
         )}
@@ -220,7 +216,6 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
                   userPick={userPicks[match.id]}
                   onPick={(pickedTeamId) => onPicksChange({ ...userPicks, [match.id]: pickedTeamId })}
                   getTeamById={getTeamById}
-                  isLeftBranch={false} // Right branch
                 />
               ))}
             </div>
@@ -230,7 +225,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
           <BracketRoundConnector
             roundIndex={1}
             isLeftBranch={false} // Right branch
-            numMatchesInCurrentRound={qfMatches.right.length}
+            numMatchesInPreviousRound={qfMatches.right.length}
             slotHeight={slotHeight}
           />
         )}
@@ -248,7 +243,6 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
                   userPick={userPicks[match.id]}
                   onPick={(pickedTeamId) => onPicksChange({ ...userPicks, [match.id]: pickedTeamId })}
                   getTeamById={getTeamById}
-                  isLeftBranch={false} // Right branch
                 />
               ))}
             </div>
@@ -258,7 +252,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
           <BracketRoundConnector
             roundIndex={0}
             isLeftBranch={false} // Right branch
-            numMatchesInCurrentRound={r16Matches.right.length}
+            numMatchesInPreviousRound={r16Matches.right.length}
             slotHeight={slotHeight}
           />
         )}
@@ -276,7 +270,6 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
                   userPick={userPicks[match.id]}
                   onPick={(pickedTeamId) => onPicksChange({ ...userPicks, [match.id]: pickedTeamId })}
                   getTeamById={getTeamById}
-                  isLeftBranch={false} // Right branch
                 />
               ))}
             </div>
@@ -298,7 +291,6 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
                   userPick={userPicks[match.id]}
                   onPick={(pickedTeamId) => onPicksChange({ ...userPicks, [match.id]: pickedTeamId })}
                   getTeamById={getTeamById}
-                  isFinalMatch={true} // No outgoing lines for 3rd place match
                 />
               ))}
             </div>
