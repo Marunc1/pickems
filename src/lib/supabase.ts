@@ -15,7 +15,7 @@ export interface Team {
   tag: string;
   region?: string; // Made optional
   logo?: string;  // Made optional
-  group?: string; // Made optional
+  // Removed group?: string;
 }
 
 export interface Tournament {

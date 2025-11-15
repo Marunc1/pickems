@@ -2,11 +2,12 @@ import { useState, useEffect } from 'react';
 import { supabase, type Tournament, type Team } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { Trophy, Save, TrendingUp, CheckCircle } from 'lucide-react';
+import BracketView from './BracketView'; // Import the new BracketView component
 
 export default function PickemsView() {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
-  const [picks, setPicks] = useState<any>({});
+  const [picks, setPicks] = useState<any>({}); // picks will now store { [tournamentId]: { [matchId]: pickedTeamId } }
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
 
@@ -88,6 +89,9 @@ export default function PickemsView() {
     );
   }
 
+  // Get picks for the current tournament, or an empty object if none exist
+  const currentTournamentPicks = picks[selectedTournament.id] || {};
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
       <div className="bg-slate-900/80 backdrop-blur-sm border-b border-slate-700">
@@ -113,9 +117,13 @@ export default function PickemsView() {
 
       <div className="max-w-7xl mx-auto px-6 py-8">
         {selectedTournament.stage === 'playoffs' ? (
-          <div className="text-white text-center py-12 text-xl">
-            Bracket pick'ems coming soon!
-          </div>
+          <BracketView
+            tournament={selectedTournament}
+            userPicks={currentTournamentPicks}
+            onPicksChange={(newPicks) =>
+              setPicks({ ...picks, [selectedTournament.id]: newPicks })
+            }
+          />
         ) : (
           <div className="text-white text-center py-12 text-xl">
             This tournament is not in playoff stage.
