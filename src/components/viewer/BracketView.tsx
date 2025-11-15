@@ -1,8 +1,7 @@
 import React from 'react';
 import { type Tournament, type Team } from '../../lib/supabase';
-import ViewerBracketMatchCard from './ViewerBracketMatchCard'; // Import the new component
+import ViewerBracketMatchCard from './ViewerBracketMatchCard';
 
-// Re-define BracketMatch interface for consistency, without admin-specific fields
 interface BracketMatch {
   id: string;
   team1_id?: string;
@@ -14,7 +13,7 @@ interface BracketMatch {
 
 interface BracketViewProps {
   tournament: Tournament;
-  userPicks: { [matchId: string]: string }; // { matchId: pickedTeamId }
+  userPicks: { [matchId: string]: string };
   onPicksChange: (newPicks: { [matchId: string]: string }) => void;
 }
 
@@ -42,13 +41,18 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
     }
   }
 
-  const roundsToDisplay = [];
-  if (bracketMatches.some(m => m.round === 'round_of_16')) roundsToDisplay.push('round_of_16');
-  if (bracketMatches.some(m => m.round === 'quarterfinals')) roundsToDisplay.push('quarterfinals');
-  if (bracketMatches.some(m => m.round === 'semifinals')) roundsToDisplay.push('semifinals');
-  if (bracketMatches.some(m => m.round === 'finals')) roundsToDisplay.push('finals');
-  if (bracketMatches.some(m => m.round === 'third_place')) roundsToDisplay.push('third_place');
-
+  const getColumnMarginTop = (roundName: string) => {
+    // Assuming ViewerBracketMatchCard has a height of ~120px and space-y-8 (32px)
+    // Total slot height = 120 + 32 = 152px
+    switch (roundName) {
+      case 'round_of_16': return 'mt-0';
+      case 'quarterfinals': return 'mt-[76px]'; // Half of 152px
+      case 'semifinals': return 'mt-[152px]'; // 1 * 152px
+      case 'finals': return 'mt-[228px]'; // 1.5 * 152px
+      case 'third_place': return 'mt-[228px]'; // Same as finals for alignment
+      default: return 'mt-0';
+    }
+  };
 
   if (bracketMatches.length === 0) {
     return (
@@ -58,46 +62,198 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
     );
   }
 
-  // Calculate vertical offsets for each round to create the cascading effect
-  const getMarginTop = (roundName: string, index: number) => {
-    switch (roundName) {
-      case 'round_of_16': return 'mt-0'; // No offset for the first round
-      case 'quarterfinals': return index % 2 === 0 ? 'mt-[100px]' : 'mt-[100px]'; // Adjust based on card height and spacing
-      case 'semifinals': return index % 2 === 0 ? 'mt-[200px]' : 'mt-[200px]';
-      case 'finals': return 'mt-[300px]';
-      case 'third_place': return 'mt-[300px]'; // Align with finals or slightly below
-      default: return 'mt-0';
-    }
+  // Helper to split matches for left/right sides
+  const splitMatchesForRound = (roundName: string) => {
+    const matches = getRoundMatches(roundName);
+    const mid = Math.ceil(matches.length / 2);
+    return { left: matches.slice(0, mid), right: matches.slice(mid) };
   };
+
+  const r16Matches = splitMatchesForRound('round_of_16');
+  const qfMatches = splitMatchesForRound('quarterfinals');
+  const sfMatches = splitMatchesForRound('semifinals');
+  const finalsMatches = getRoundMatches('finals');
+  const thirdPlaceMatches = getRoundMatches('third_place');
+
+  // Filter rounds that actually have matches to avoid rendering empty columns
+  const hasR16 = bracketMatches.some(m => m.round === 'round_of_16');
+  const hasQF = bracketMatches.some(m => m.round === 'quarterfinals');
+  const hasSF = bracketMatches.some(m => m.round === 'semifinals');
+  const hasFinals = bracketMatches.some(m => m.round === 'finals');
+  const hasThirdPlace = bracketMatches.some(m => m.round === 'third_place');
 
   return (
     <div className="overflow-x-auto pb-4">
       <div className="flex justify-center min-w-max p-4">
-        {roundsToDisplay.map((round, roundIndex) => {
-          const roundMatches = getRoundMatches(round);
-          if (roundMatches.length === 0) return null;
 
-          return (
-            <div key={round} className={`flex flex-col items-center mx-4 ${round === 'third_place' ? 'ml-12' : ''}`}>
+        {/* Left Side */}
+        <div className="flex flex-row-reverse items-start">
+          {hasSF && sfMatches.left.length > 0 && (
+            <div className={`flex flex-col items-center mx-4 ${getColumnMarginTop('semifinals')}`}>
               <h3 className="text-xl font-bold text-white mb-6 text-center whitespace-nowrap">
-                {getRoundName(round)}
+                {getRoundName('semifinals')}
               </h3>
-              <div className="flex flex-col space-y-8"> {/* Space between matches in a column */}
-                {roundMatches.map((match, matchIndex) => (
-                  <div key={match.id} className={`${getMarginTop(round, matchIndex)}`}>
-                    <ViewerBracketMatchCard
-                      match={match}
-                      teams={allTeams}
-                      userPick={userPicks[match.id]}
-                      onPick={(pickedTeamId) => onPicksChange({ ...userPicks, [match.id]: pickedTeamId })}
-                      getTeamById={getTeamById}
-                    />
-                  </div>
+              <div className="flex flex-col space-y-8">
+                {sfMatches.left.map((match) => (
+                  <ViewerBracketMatchCard
+                    key={match.id}
+                    match={match}
+                    teams={allTeams}
+                    userPick={userPicks[match.id]}
+                    onPick={(pickedTeamId) => onPicksChange({ ...userPicks, [match.id]: pickedTeamId })}
+                    getTeamById={getTeamById}
+                  />
                 ))}
               </div>
             </div>
-          );
-        })}
+          )}
+
+          {hasQF && qfMatches.left.length > 0 && (
+            <div className={`flex flex-col items-center mx-4 ${getColumnMarginTop('quarterfinals')}`}>
+              <h3 className="text-xl font-bold text-white mb-6 text-center whitespace-nowrap">
+                {getRoundName('quarterfinals')}
+              </h3>
+              <div className="flex flex-col space-y-8">
+                {qfMatches.left.map((match) => (
+                  <ViewerBracketMatchCard
+                    key={match.id}
+                    match={match}
+                    teams={allTeams}
+                    userPick={userPicks[match.id]}
+                    onPick={(pickedTeamId) => onPicksChange({ ...userPicks, [match.id]: pickedTeamId })}
+                    getTeamById={getTeamById}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {hasR16 && r16Matches.left.length > 0 && (
+            <div className={`flex flex-col items-center mx-4 ${getColumnMarginTop('round_of_16')}`}>
+              <h3 className="text-xl font-bold text-white mb-6 text-center whitespace-nowrap">
+                {getRoundName('round_of_16')}
+              </h3>
+              <div className="flex flex-col space-y-8">
+                {r16Matches.left.map((match) => (
+                  <ViewerBracketMatchCard
+                    key={match.id}
+                    match={match}
+                    teams={allTeams}
+                    userPick={userPicks[match.id]}
+                    onPick={(pickedTeamId) => onPicksChange({ ...userPicks, [match.id]: pickedTeamId })}
+                    getTeamById={getTeamById}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Middle (Finals & 3rd Place) */}
+        <div className={`flex flex-col items-center mx-4 ${getColumnMarginTop('finals')}`}>
+          {hasFinals && finalsMatches.length > 0 && (
+            <>
+              <h3 className="text-xl font-bold text-white mb-6 text-center whitespace-nowrap">
+                {getRoundName('finals')}
+              </h3>
+              <div className="flex flex-col space-y-8">
+                {finalsMatches.map((match) => (
+                  <ViewerBracketMatchCard
+                    key={match.id}
+                    match={match}
+                    teams={allTeams}
+                    userPick={userPicks[match.id]}
+                    onPick={(pickedTeamId) => onPicksChange({ ...userPicks, [match.id]: pickedTeamId })}
+                    getTeamById={getTeamById}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+          {hasThirdPlace && thirdPlaceMatches.length > 0 && (
+            <>
+              <h3 className="text-xl font-bold text-white mt-8 mb-6 text-center whitespace-nowrap">
+                {getRoundName('third_place')}
+              </h3>
+              <div className="flex flex-col space-y-8">
+                {thirdPlaceMatches.map((match) => (
+                  <ViewerBracketMatchCard
+                    key={match.id}
+                    match={match}
+                    teams={allTeams}
+                    userPick={userPicks[match.id]}
+                    onPick={(pickedTeamId) => onPicksChange({ ...userPicks, [match.id]: pickedTeamId })}
+                    getTeamById={getTeamById}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Right Side */}
+        <div className="flex items-start">
+          {hasSF && sfMatches.right.length > 0 && (
+            <div className={`flex flex-col items-center mx-4 ${getColumnMarginTop('semifinals')}`}>
+              <h3 className="text-xl font-bold text-white mb-6 text-center whitespace-nowrap">
+                {getRoundName('semifinals')}
+              </h3>
+              <div className="flex flex-col space-y-8">
+                {sfMatches.right.map((match) => (
+                  <ViewerBracketMatchCard
+                    key={match.id}
+                    match={match}
+                    teams={allTeams}
+                    userPick={userPicks[match.id]}
+                    onPick={(pickedTeamId) => onPicksChange({ ...userPicks, [match.id]: pickedTeamId })}
+                    getTeamById={getTeamById}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {hasQF && qfMatches.right.length > 0 && (
+            <div className={`flex flex-col items-center mx-4 ${getColumnMarginTop('quarterfinals')}`}>
+              <h3 className="text-xl font-bold text-white mb-6 text-center whitespace-nowrap">
+                {getRoundName('quarterfinals')}
+              </h3>
+              <div className="flex flex-col space-y-8">
+                {qfMatches.right.map((match) => (
+                  <ViewerBracketMatchCard
+                    key={match.id}
+                    match={match}
+                    teams={allTeams}
+                    userPick={userPicks[match.id]}
+                    onPick={(pickedTeamId) => onPicksChange({ ...userPicks, [match.id]: pickedTeamId })}
+                    getTeamById={getTeamById}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {hasR16 && r16Matches.right.length > 0 && (
+            <div className={`flex flex-col items-center mx-4 ${getColumnMarginTop('round_of_16')}`}>
+              <h3 className="text-xl font-bold text-white mb-6 text-center whitespace-nowrap">
+                {getRoundName('round_of_16')}
+              </h3>
+              <div className="flex flex-col space-y-8">
+                {r16Matches.right.map((match) => (
+                  <ViewerBracketMatchCard
+                    key={match.id}
+                    match={match}
+                    teams={allTeams}
+                    userPick={userPicks[match.id]}
+                    onPick={(pickedTeamId) => onPicksChange({ ...userPicks, [match.id]: pickedTeamId })}
+                    getTeamById={getTeamById}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
       </div>
     </div>
   );
