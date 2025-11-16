@@ -1,0 +1,218 @@
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4';
+import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
+
+// Initialize Supabase client with service_role key
+const supabaseAdmin = createClient(
+  Deno.env.get('SUPABASE_URL') ?? '',
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+);
+
+// Define types needed for the function (copied from src/lib/supabase.ts)
+interface Team {
+  id: string;
+  name: string;
+  tag: string;
+  region?: string;
+  logo?: string;
+}
+
+interface Tournament {
+  id: string;
+  name: string;
+  stage: string;
+  status: string;
+  teams: Team[];
+  matches: any[];
+  bracket_data: any;
+  start_date: string;
+  end_date: string;
+  created_at: string;
+  updated_at: string;
+  locked_rounds?: string[];
+}
+
+interface UserData {
+  id: string;
+  user_id: string;
+  username: string;
+  is_admin: boolean;
+  picks: any;
+  score: number;
+  created_at: string;
+  updated_at: string;
+}
+
+interface AdminConfig {
+  id: string;
+  key: string;
+  value: {
+    round_of_16: number;
+    quarterfinals: number;
+    semifinals: number;
+    third_place: number;
+    finals: number;
+  };
+  created_at: string;
+  updated_at: string;
+}
+
+serve(async (req) => {
+  try {
+    // 1. Fetch scoring rules
+    const { data: adminConfigData, error: adminConfigError } = await supabaseAdmin
+      .from('admin_config')
+      .select('value')
+      .eq('key', 'scoring_rules')
+      .maybeSingle();
+
+    if (adminConfigError) {
+      console.error('Error fetching admin config:', adminConfigError);
+      return new Response(JSON.stringify({ error: 'Failed to fetch scoring rules' }), {
+        headers: { 'Content-Type': 'application/json' },
+        status: 500,
+      });
+    }
+
+    const defaultScoringRules = {
+      round_of_16: 2,
+      quarterfinals: 4,
+      semifinals: 6,
+      third_place: 10,
+      finals: 15,
+    };
+
+    const scoringRules = { ...defaultScoringRules, ...(adminConfigData?.value || {}) } as typeof defaultScoringRules;
+    console.log('Scoring Rules (effective):', scoringRules);
+
+    // 2. Fetch all active/completed tournaments with their bracket data
+    const { data: tournamentsData, error: tournamentsError } = await supabaseAdmin
+      .from('tournament_settings')
+      .select('id, name, bracket_data, status, teams');
+
+    if (tournamentsError) {
+      console.error('Error fetching tournaments:', tournamentsError);
+      return new Response(JSON.stringify({ error: 'Failed to fetch tournaments' }), {
+        headers: { 'Content-Type': 'application/json' },
+        status: 500,
+      });
+    }
+
+    const relevantTournaments = (tournamentsData || []).filter(
+      (t: Tournament) => t.status === 'active' || t.status === 'completed'
+    );
+    console.log('Relevant Tournaments:', relevantTournaments.map(t => ({ id: t.id, name: t.name, status: t.status, bracket_data_exists: !!t.bracket_data })));
+
+    // 3. Fetch all user data (including their picks)
+    const { data: usersData, error: usersError } = await supabaseAdmin
+      .from('user_data')
+      .select('id, user_id, username, picks');
+
+    if (usersError) {
+      console.error('Error fetching users:', usersError);
+      return new Response(JSON.stringify({ error: 'Failed to fetch user data' }), {
+        headers: { 'Content-Type': 'application/json' },
+        status: 500,
+      });
+    }
+
+    const users = usersData || [];
+    console.log('Users fetched:', users.map(u => ({ id: u.id, username: u.username, picks_exists: !!u.picks })));
+
+    // Helper to get team name by ID
+    const getTeamName = (tournament: Tournament, teamId?: string) => {
+      if (!teamId) return 'N/A';
+      return tournament.teams?.find(t => t.id === teamId)?.name || `Unknown Team (${teamId})`;
+    };
+
+    // 4. Recalculate score for each user
+    const updates = users.map(async (user: UserData) => {
+      let totalScore = 0;
+      const userPicks = user.picks || {};
+      console.log(`\n--- Processing user: ${user.username} (ID: ${user.user_id}) ---`);
+      console.log(`  User's raw picks object:`, JSON.stringify(userPicks));
+
+      for (const tournament of relevantTournaments) {
+        const tournamentPicks = userPicks[tournament.id] || {};
+        const bracketMatches = (tournament.bracket_data as any)?.matches || [];
+        console.log(`  Tournament: ${tournament.name} (ID: ${tournament.id}), Status: ${tournament.status}, Bracket matches count: ${bracketMatches.length}`);
+        console.log(`  User picks for this tournament (${tournament.name}):`, JSON.stringify(tournamentPicks));
+
+        for (const match of bracketMatches) {
+          console.log(`    Match ${match.id} (Round: ${match.round}, Match #: ${match.match_number}):`);
+          console.log(`      Team 1: ${getTeamName(tournament, match.team1_id)} (ID: ${match.team1_id}), Score: ${match.team1_score}`);
+          console.log(`      Team 2: ${getTeamName(tournament, match.team2_id)} (ID: ${match.team2_id}), Score: ${match.team2_score}`);
+          
+          const userPickedTeamId = tournamentPicks[match.id];
+          const actualWinnerId = match.winner_id;
+
+          console.log(`      User Picked Team ID: ${userPickedTeamId}`);
+          console.log(`      User Picked Team Name: ${getTeamName(tournament, userPickedTeamId)}`);
+          console.log(`      Actual Winner ID (from bracket_data): ${actualWinnerId}`);
+          console.log(`      Actual Winner Name: ${getTeamName(tournament, actualWinnerId)}`);
+
+          if (actualWinnerId) { 
+            const isCorrectPick = userPickedTeamId === actualWinnerId;
+            console.log(`      Is Correct Pick? ${isCorrectPick}`);
+
+            if (isCorrectPick) {
+              let pointsForRound = 0;
+              switch (match.round) {
+                case 'round_of_16':
+                  pointsForRound = scoringRules.round_of_16;
+                  break;
+                case 'quarterfinals':
+                  pointsForRound = scoringRules.quarterfinals;
+                  break;
+                case 'semifinals':
+                  pointsForRound = scoringRules.semifinals;
+                  break;
+                case 'third_place':
+                  pointsForRound = scoringRules.third_place;
+                  break;
+                case 'finals':
+                  pointsForRound = scoringRules.finals;
+                  break;
+                default:
+                  pointsForRound = 0;
+                  console.warn(`      -> Unknown round type: ${match.round}. No points added.`);
+              }
+              totalScore += pointsForRound;
+              console.log(`      -> Correct pick for ${match.round}! Adding ${pointsForRound} points. Current total: ${totalScore}`);
+            } else {
+              console.log(`      -> Incorrect pick or no pick for this match.`);
+            }
+          } else {
+            console.log(`    Match ${match.id}: No actual winner_id yet. Skipping scoring for this match.`);
+          }
+        }
+      }
+
+      console.log(`  Final calculated score for user ${user.username} (ID: ${user.user_id}): ${totalScore}`);
+      const { error: updateError } = await supabaseAdmin
+        .from('user_data')
+        .update({ score: totalScore })
+        .eq('user_id', user.user_id);
+
+      if (updateError) {
+        console.error(`Error updating score for user ${user.username} (ID: ${user.user_id}):`, updateError);
+      } else {
+        console.log(`\nSuccessfully updated score for user ${user.username} to ${totalScore}`);
+      }
+    });
+
+    await Promise.all(updates);
+    console.log('\nAll user scores recalculation process completed!');
+
+    return new Response(JSON.stringify({ message: 'Scores recalculated successfully!' }), {
+      headers: { 'Content-Type': 'application/json' },
+      status: 200,
+    });
+
+  } catch (error) {
+    console.error('Unhandled error during score recalculation:', error);
+    return new Response(JSON.stringify({ error: 'Internal server error' }), {
+      headers: { 'Content-Type': 'application/json' },
+      status: 500,
+    });
+  }
+});
