@@ -36,7 +36,7 @@ export default function ViewerBracketMatchCard({ match, teams, userPick, onPick,
   const isTeam2Picked = userPick === match.team2_id;
 
   const isTeam1Selectable = !!match.team1_id;
-  const isTeam2Selectable = !!match.team2.id;
+  const isTeam2Selectable = !!match.team2_id; // Corrected this line
 
   const cardClasses = `bg-slate-800 rounded-lg p-4 w-[12rem] h-[180px] border border-slate-700 shadow-md flex flex-col justify-between relative`;
 
