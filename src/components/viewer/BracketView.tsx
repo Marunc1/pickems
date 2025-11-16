@@ -96,7 +96,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
 
 
   return (
-    <div className=""> {/* Removed bg-slate-800 rounded-xl p-6 border border-slate-700 shadow-lg */}
+    <div className="">
       {bracket.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-slate-400 text-lg mb-4">Bracket not initialized for this tournament.</p>
@@ -136,30 +136,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
                       })}
                     </div>
                     {/* Vertical connecting lines between rounds */}
-                    {roundIndex < roundsToDisplay.length - 1 && (
-                      <div className="absolute top-0 bottom-0" style={{ left: `${(roundIndex + 1) * (matchCardWidth + horizontalGap) - horizontalGap / 2}px` }}>
-                        {roundMatches.map((match, matchIndex) => {
-                          const { marginTop: cardMarginTop, gapBetweenPairedMatches } = getMatchVerticalLayout(round);
-                          
-                          // Only draw vertical line if this match is the first of a pair feeding into the next round
-                          if (matchIndex % 2 === 0) {
-                            const startY = cardMarginTop + matchCardHeight / 2; // Center of the first match card in the pair
-                            const endY = startY + matchCardHeight + gapBetweenPairedMatches; // Center of the second match card in the pair
-
-                            const height = endY - startY;
-
-                            return (
-                              <div
-                                key={`v-line-${match.id}`}
-                                className="absolute left-0 bg-slate-600 w-[2px]"
-                                style={{ top: `${startY}px`, height: `${height}px` }}
-                              ></div>
-                            );
-                          }
-                          return null;
-                        })}
-                      </div>
-                    )}
+                    {/* Removed the vertical connecting lines as requested */}
                   </React.Fragment>
                 );
               })}
