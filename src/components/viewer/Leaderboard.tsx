@@ -69,9 +69,9 @@ export default function Leaderboard() {
             <table className="w-full">
               <thead className="bg-slate-900">
                 <tr>
-                  <th className="px-6 py-4 text-center text-sm font-semibold text-slate-300 uppercase tracking-wider w-20">Rank</th> {/* Adjusted width */}
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-slate-300 uppercase tracking-wider">Player</th>
-                  <th className="px-6 py-4 text-right text-sm font-semibold text-slate-300 uppercase tracking-wider w-32">Score</th> {/* Adjusted width */}
+                  <th className="px-6 py-2 text-center text-sm font-semibold text-slate-300 uppercase tracking-wider w-20">Rank</th> {/* Adjusted width */}
+                  <th className="px-6 py-2 text-left text-sm font-semibold text-slate-300 uppercase tracking-wider">Player</th>
+                  <th className="px-6 py-2 text-right text-sm font-semibold text-slate-300 uppercase tracking-wider w-32">Score</th> {/* Adjusted width */}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-600">
