@@ -76,17 +76,18 @@ export async function recalculateAllUserScores() {
           console.log(`    Match ${match.id} (Round: ${match.round}, Match #: ${match.match_number}):`);
           console.log(`      Team 1: ${getTeamName(tournament, match.team1_id)} (ID: ${match.team1_id}), Score: ${match.team1_score}`);
           console.log(`      Team 2: ${getTeamName(tournament, match.team2_id)} (ID: ${match.team2_id}), Score: ${match.team2_score}`);
-          console.log(`      Actual Winner ID (from bracket_data): ${match.winner_id}`);
-          console.log(`      Actual Winner Name: ${getTeamName(tournament, match.winner_id)}`);
+          
+          const userPickedTeamId = tournamentPicks[match.id]; // Get user pick regardless of winner_id
+          const actualWinnerId = match.winner_id; // Actual winner might be undefined
+
+          console.log(`      User Picked Team ID: ${userPickedTeamId}`);
+          console.log(`      User Picked Team Name: ${getTeamName(tournament, userPickedTeamId)}`);
+          console.log(`      Actual Winner ID (from bracket_data): ${actualWinnerId}`);
+          console.log(`      Actual Winner Name: ${getTeamName(tournament, actualWinnerId)}`);
 
           // Only score matches that have a determined winner
-          if (match.winner_id) {
-            const userPickedTeamId = tournamentPicks[match.id];
-            const actualWinnerId = match.winner_id;
+          if (actualWinnerId) { 
             const isCorrectPick = userPickedTeamId === actualWinnerId;
-
-            console.log(`      User Picked Team ID: ${userPickedTeamId}`);
-            console.log(`      User Picked Team Name: ${getTeamName(tournament, userPickedTeamId)}`);
             console.log(`      Is Correct Pick? ${isCorrectPick}`);
 
             if (isCorrectPick) {
@@ -109,6 +110,7 @@ export async function recalculateAllUserScores() {
                   break;
                 default:
                   pointsForRound = 0; // No points for unknown rounds
+                  console.warn(`      -> Unknown round type: ${match.round}. No points added.`);
               }
               totalScore += pointsForRound;
               console.log(`      -> Correct pick for ${match.round}! Adding ${pointsForRound} points. Current total: ${totalScore}`);
@@ -116,12 +118,13 @@ export async function recalculateAllUserScores() {
               console.log(`      -> Incorrect pick or no pick for this match.`);
             }
           } else {
-            console.log(`    Match ${match.id}: No winner_id yet. Skipping scoring for this match.`);
+            console.log(`    Match ${match.id}: No actual winner_id yet. Skipping scoring for this match.`);
           }
         }
       }
 
       // Update the user's score in the database
+      console.log(`  Final calculated score for user ${user.username} (ID: ${user.user_id}): ${totalScore}`);
       const { error: updateError } = await supabase
         .from('user_data')
         .update({ score: totalScore })
