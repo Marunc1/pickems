@@ -23,7 +23,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
 
   // Constants for layout
   const matchCardHeight = 80; // from ViewerBracketMatchCard.tsx
-  const matchCardWidth = 160; // from ViewerBracketMatchCard.tsx
+  const matchCardWidth = 192; // from ViewerBracketMatchCard.tsx (w-48 = 192px)
   const horizontalGap = 20; // Space between round columns
   const baseVerticalMatchSpacing = 30; // Base vertical space between match cards for higher rounds (increased from 20)
 

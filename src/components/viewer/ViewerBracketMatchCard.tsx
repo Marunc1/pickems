@@ -39,7 +39,7 @@ export default function ViewerBracketMatchCard({ match, teams, userPick, onPick,
   const isTeam2Selectable = !!match.team2_id;
 
   return (
-    <div className="w-40 h-20 flex flex-col justify-between relative p-0">
+    <div className="w-48 h-20 flex flex-col justify-between relative p-0"> {/* Changed w-40 to w-48 */}
       <div className="space-y-1 flex-grow">
         <div
           className={`flex items-center justify-between py-1 px-2 rounded-sm transition-colors duration-150 ${
