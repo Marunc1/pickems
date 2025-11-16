@@ -83,6 +83,8 @@ export default function ViewerBracketMatchCard({ match, teams, userPick, onPick,
           </div>
         </div>
       )}
+      {/* Outgoing horizontal line */}
+      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-[2px] bg-slate-600"></div>
     </div>
   );
 }

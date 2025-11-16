@@ -50,10 +50,10 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
   if (numTeams > 0) roundsToDisplay.push('finals');
   if (numTeams >= 4) roundsToDisplay.push('third_place');
 
-  // Calculate slot height for connectors based on new card size and spacing
+  // Define constants for match card dimensions and spacing
   const matchCardHeight = 50; // from ViewerBracketMatchCard.tsx
   const matchSpacing = 2; // from space-y-0.5 (0.125rem = 2px)
-  const slotHeight = matchCardHeight + matchSpacing; 
+  const connectorHorizontalLength = 16; // Corresponds to w-4 in BracketRoundConnector
 
   const handlePickChange = (matchId: string, pickedTeamId: string) => {
     const newPicks = { ...userPicks, [matchId]: pickedTeamId };
@@ -69,11 +69,14 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
         </div>
       ) : (
         <div className="overflow-x-auto max-h-[700px] overflow-y-auto">
-          <div className="w-full flex justify-center"> {/* Added wrapper for centering */}
-            <div className="flex gap-2 min-w-max">
+          <div className="w-full flex justify-center">
+            <div className="flex gap-0 min-w-max"> {/* Set gap to 0 here, connectors will manage spacing */}
               {roundsToDisplay.map((round, roundIndex) => {
                 const roundMatches = getRoundMatches(round);
                 if (roundMatches.length === 0) return null;
+
+                // The connector should start at the vertical center of the first match card.
+                const connectorTopOffset = matchCardHeight / 2; // 25px
 
                 return (
                   <React.Fragment key={round}>
@@ -96,8 +99,19 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
                     </div>
                     {/* Add connectors between rounds, but not after the last round */}
                     {roundIndex < roundsToDisplay.length - 1 && (
-                      <div className="flex items-center justify-center">
-                        <BracketRoundConnector isLeftBranch={true} slotHeight={slotHeight} />
+                      <div 
+                        className="relative flex-shrink-0" 
+                        style={{ 
+                          width: `${connectorHorizontalLength}px`, 
+                          marginTop: `${connectorTopOffset}px`,
+                          marginBottom: `${connectorTopOffset}px` // Balance the top margin
+                        }}
+                      >
+                        {/* For 2 matches connecting to 1, the vertical span is matchCardHeight + matchSpacing */}
+                        <BracketRoundConnector 
+                          verticalSpan={matchCardHeight + matchSpacing} 
+                          horizontalLength={connectorHorizontalLength} 
+                        />
                       </div>
                     )}
                   </React.Fragment>

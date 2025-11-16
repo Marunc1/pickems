@@ -1,47 +1,31 @@
 import React from 'react';
 
 interface BracketRoundConnectorProps {
-  isLeftBranch: boolean; // True for left side, false for right side
-  slotHeight: number; // Height of one match slot (card + spacing)
+  verticalSpan: number; // The total vertical distance the connector should span (from center of top match to center of bottom match)
+  horizontalLength: number; // The length of the horizontal segment to the next round
 }
 
 export default function BracketRoundConnector({
-  isLeftBranch,
-  slotHeight,
+  verticalSpan,
+  horizontalLength,
 }: BracketRoundConnectorProps) {
   const lineColor = "bg-slate-600";
-  const lineWidth = "w-[2px]";
-  const horizontalLineLength = "w-1"; // Reduced length of the horizontal segment
-
-  // This connector will span exactly one 'slotHeight' vertically.
-  // It connects the center of two matches to the center of one.
-
+  const lineWidth = "w-[2px]"; // Vertical line thickness
+  
   return (
     <div
-      className={`relative flex-shrink-0 ${horizontalLineLength}`}
-      style={{ height: `${slotHeight}px` }} // Height is one slotHeight
+      className={`relative flex-shrink-0`}
+      style={{ width: `${horizontalLength}px`, height: `${verticalSpan}px` }}
     >
-      {/* Horizontal line from top match (center) */}
+      {/* Vertical line connecting the two matches */}
       <div
-        className={`absolute ${isLeftBranch ? 'left-0' : 'right-0'} ${horizontalLineLength} h-[2px] ${lineColor}`}
-        style={{ top: `-1px` }} // Aligns with the top of its container (which is the center of the first match)
-      ></div>
-      {/* Horizontal line from bottom match (center) */}
-      <div
-        className={`absolute ${isLeftBranch ? 'left-0' : 'right-0'} ${horizontalLineLength} h-[2px] ${lineColor}`}
-        style={{ top: `${slotHeight - 1}px` }} // Aligns with the bottom of its container (which is the center of the second match)
+        className={`absolute left-0 top-0 ${lineWidth} ${lineColor}`}
+        style={{ height: `100%` }} // Spans the full height of its container
       ></div>
 
-      {/* Vertical line connecting the two horizontal lines */}
+      {/* Horizontal line going to the next round's match (from the middle of the vertical line) */}
       <div
-        className={`absolute ${isLeftBranch ? 'left-0' : 'right-0'} ${lineWidth} ${lineColor}`}
-        style={{ top: `0px`, height: `${slotHeight}px` }}
-      ></div>
-
-      {/* Horizontal line going to the next round's match (center) */}
-      <div
-        className={`absolute ${isLeftBranch ? 'left-0' : 'right-0'} ${horizontalLineLength} h-[2px] ${lineColor}`}
-        style={{ top: `${slotHeight / 2 - 1}px` }} // Middle of the vertical line
+        className={`absolute left-0 top-1/2 -translate-y-1/2 w-full h-[2px] ${lineColor}`}
       ></div>
     </div>
   );
