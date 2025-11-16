@@ -25,7 +25,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
   const matchCardHeight = 80; // from ViewerBracketMatchCard.tsx
   const matchCardWidth = 160; // from ViewerBracketMatchCard.tsx
   const horizontalGap = 40; // Space between round columns
-  const verticalMatchSpacing = 20; // Base vertical space between match cards
+  const baseVerticalMatchSpacing = 20; // Base vertical space between match cards for higher rounds
 
   function getTeamById(id?: string) {
     if (!id) return null;
@@ -60,30 +60,39 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
     onPicksChange(newPicks);
   };
 
-  // Function to get the vertical offset for a match card
-  const getMatchVerticalOffset = (roundName: string, matchIndex: number, totalMatchesInRound: number) => {
+  // Function to get the vertical layout properties for a match card within its round
+  const getMatchVerticalLayout = (roundName: string) => {
     let level = 0; // 0 for Finals, 1 for Semis, 2 for QF, 3 for R16
+    let effectiveVerticalSpacing = baseVerticalMatchSpacing; // Default global spacing
+
     switch (roundName) {
       case 'finals': level = 0; break;
       case 'semifinals': level = 1; break;
       case 'quarterfinals': level = 2; break;
-      case 'round_of_16': level = 3; break;
-      case 'third_place': return { marginTop: 0, marginBottom: 0 }; // Special case, position below
+      case 'round_of_16': 
+        level = 3; 
+        effectiveVerticalSpacing = 5; // Smaller spacing for Round of 16
+        break;
+      case 'third_place': return { marginTop: 0, marginBottom: 0, gapBetweenPairedMatches: 0 }; // Special case
     }
 
-    // The total vertical space a match "slot" occupies in the layout
-    const slotHeight = matchCardHeight + (verticalMatchSpacing * (2 ** level - 1));
-
-    // Calculate the margin needed to center the match card within its slot
-    const marginTop = (slotHeight - matchCardHeight) / 2;
+    // The total vertical space a match "slot" occupies, including its own height and half the gap above/below
+    const totalVerticalSpacePerMatchSlot = matchCardHeight + (effectiveVerticalSpacing * (2 ** level - 1));
+    
+    const marginTop = (totalVerticalSpacePerMatchSlot - matchCardHeight) / 2;
     const marginBottom = marginTop;
 
-    return { marginTop, marginBottom };
+    // The actual gap between two *paired* matches that feed into the next round
+    // This is the space between the bottom of the first card and the top of the second card in a pair
+    const gapBetweenPairedMatches = effectiveVerticalSpacing * (2 ** level - 1);
+
+    return { marginTop, marginBottom, gapBetweenPairedMatches };
   };
 
   // Calculate the total height needed for the bracket to center it
   const maxRoundMatches = Math.max(...roundsToDisplay.map(round => getRoundMatches(round).length));
-  const totalBracketHeight = (matchCardHeight + verticalMatchSpacing * (2 ** (roundsToDisplay.length - 1) - 1)) * maxRoundMatches / 2;
+  // This calculation uses baseVerticalMatchSpacing for overall height estimation
+  const totalBracketHeight = (matchCardHeight + baseVerticalMatchSpacing * (2 ** (roundsToDisplay.length - 1) - 1)) * maxRoundMatches / 2;
 
 
   return (
@@ -108,7 +117,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
                         {getRoundName(round)}
                       </h3>
                       {roundMatches.map((match, matchIndex) => {
-                        const { marginTop, marginBottom } = getMatchVerticalOffset(round, matchIndex, roundMatches.length);
+                        const { marginTop, marginBottom } = getMatchVerticalLayout(round);
                         return (
                           <div key={match.id} style={{ marginTop: `${marginTop}px`, marginBottom: `${marginBottom}px` }} className="relative">
                             <ViewerBracketMatchCard
@@ -130,13 +139,13 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
                     {roundIndex < roundsToDisplay.length - 1 && (
                       <div className="absolute top-0 bottom-0" style={{ left: `${(roundIndex + 1) * (matchCardWidth + horizontalGap) - horizontalGap / 2}px` }}>
                         {roundMatches.map((match, matchIndex) => {
-                          const { marginTop: cardMarginTop } = getMatchVerticalOffset(round, matchIndex, roundMatches.length);
-                          const nextRoundMatches = getRoundMatches(roundsToDisplay[roundIndex + 1]);
+                          const { marginTop: cardMarginTop, gapBetweenPairedMatches } = getMatchVerticalLayout(round);
                           
                           // Only draw vertical line if this match is the first of a pair feeding into the next round
-                          if (matchIndex % 2 === 0 && nextRoundMatches.length > 0) {
-                            const startY = cardMarginTop + matchCardHeight / 2;
-                            const endY = cardMarginTop + matchCardHeight + verticalMatchSpacing + matchCardHeight / 2;
+                          if (matchIndex % 2 === 0) {
+                            const startY = cardMarginTop + matchCardHeight / 2; // Center of the first match card in the pair
+                            const endY = startY + matchCardHeight + gapBetweenPairedMatches; // Center of the second match card in the pair
+
                             const height = endY - startY;
 
                             return (
