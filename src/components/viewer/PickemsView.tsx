@@ -123,6 +123,7 @@ export default function PickemsView() {
             onPicksChange={(newPicks) =>
               setPicks({ ...picks, [selectedTournament.id]: newPicks })
             }
+            lockedRounds={selectedTournament.locked_rounds || []} // Pass locked_rounds
           />
         ) : (
           <div className="text-white text-center py-12 text-xl">

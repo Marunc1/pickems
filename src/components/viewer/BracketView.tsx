@@ -16,9 +16,10 @@ interface BracketViewProps {
   tournament: Tournament;
   userPicks: { [matchId: string]: string };
   onPicksChange: (newPicks: { [matchId: string]: string }) => void;
+  lockedRounds: string[]; // New prop for locked rounds
 }
 
-export default function BracketView({ tournament, userPicks, onPicksChange }: BracketViewProps) {
+export default function BracketView({ tournament, userPicks, onPicksChange, lockedRounds }: BracketViewProps) {
   const bracket = (tournament.bracket_data as any)?.matches || [];
   const teams = tournament.teams || [];
 
@@ -142,6 +143,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
                     </h3>
                     {roundMatches.map((match: BracketMatch) => { // Cast match to BracketMatch
                       const { marginTop, marginBottom } = getMatchVerticalLayout(col.roundName);
+                      const isMatchLocked = lockedRounds.includes(match.round); // Check if the match's round is locked
                       return (
                         <div key={match.id} style={{ marginTop: `${marginTop}px`, marginBottom: `${marginBottom}px` }} className="relative">
                           <ViewerBracketMatchCard
@@ -150,6 +152,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
                             userPick={userPicks[match.id]}
                             onPick={(pickedTeamId) => handlePickChange(match.id, pickedTeamId)}
                             getTeamById={getTeamById}
+                            isLocked={isMatchLocked} // Pass the locked status
                           />
                         </div>
                       );

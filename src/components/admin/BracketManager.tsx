@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase, type Tournament, type Team } from '../../lib/supabase';
-import { Save, Trophy, ArrowRight } from 'lucide-react';
-import { recalculateAllUserScores } from '../../api/scoreAPI'; // Import the new function
+import { Save, Trophy, ArrowRight, Lock } from 'lucide-react'; // Import Lock icon
+import { recalculateAllUserScores } from '../../api/scoreAPI';
 
 interface BracketMatch {
   id: string;
@@ -18,16 +18,18 @@ interface BracketMatch {
 interface BracketManagerProps {
   tournament: Tournament;
   onRefresh: () => void;
-  eligibleTeams: Team[]; // Renamed from qualifiedTeams to eligibleTeams
+  eligibleTeams: Team[];
 }
 
 export default function BracketManager({ tournament, onRefresh, eligibleTeams }: BracketManagerProps) {
   const [bracket, setBracket] = useState<BracketMatch[]>((tournament.bracket_data as any)?.matches || []);
+  const [lockedRounds, setLockedRounds] = useState<string[]>(tournament.locked_rounds || []); // State for locked rounds
 
-  // Reset bracket state if tournament or eligibleTeams change
+  // Reset bracket and lockedRounds state if tournament or eligibleTeams change
   useEffect(() => {
     setBracket((tournament.bracket_data as any)?.matches || []);
-  }, [tournament.id, eligibleTeams]); // Depend on tournament.id and eligibleTeams
+    setLockedRounds(tournament.locked_rounds || []); // Update lockedRounds when tournament changes
+  }, [tournament.id, eligibleTeams, tournament.locked_rounds]);
 
   function initializeBracket() {
     if (eligibleTeams.length === 0) {
@@ -95,7 +97,7 @@ export default function BracketManager({ tournament, onRefresh, eligibleTeams }:
     try {
       const { error } = await supabase
         .from('tournament_settings')
-        .update({ bracket_data: { matches: bracket } })
+        .update({ bracket_data: { matches: bracket }, locked_rounds: lockedRounds }) // Include locked_rounds
         .eq('id', tournament.id);
 
       if (error) throw error;
@@ -108,6 +110,32 @@ export default function BracketManager({ tournament, onRefresh, eligibleTeams }:
     } catch (error) {
       console.error('Error saving bracket or recalculating scores:', error);
       alert('Error saving bracket or recalculating scores');
+    }
+  }
+
+  async function handleToggleLockRound(roundName: string) {
+    let updatedLockedRounds;
+    if (lockedRounds.includes(roundName)) {
+      updatedLockedRounds = lockedRounds.filter(r => r !== roundName);
+    } else {
+      updatedLockedRounds = [...lockedRounds, roundName];
+    }
+    setLockedRounds(updatedLockedRounds); // Optimistic update
+
+    try {
+      const { error } = await supabase
+        .from('tournament_settings')
+        .update({ locked_rounds: updatedLockedRounds })
+        .eq('id', tournament.id);
+
+      if (error) throw error;
+      onRefresh(); // Refresh tournament data to reflect changes
+      alert(`Round "${getRoundName(roundName)}" lock status updated!`);
+    } catch (error) {
+      console.error('Error updating locked rounds:', error);
+      alert('Error updating locked rounds.');
+      // Revert optimistic update on error
+      setLockedRounds(lockedRounds);
     }
   }
 
@@ -182,17 +210,28 @@ export default function BracketManager({ tournament, onRefresh, eligibleTeams }:
                 const roundMatches = getRoundMatches(round);
                 if (roundMatches.length === 0) return null;
 
+                const isRoundLocked = lockedRounds.includes(round);
+
                 return (
                   <div key={round} className="flex-shrink-0">
-                    <h3 className="text-xl font-bold text-white mb-4 text-center">
+                    <h3 className="text-xl font-bold text-white mb-4 text-center flex items-center justify-center gap-2">
                       {getRoundName(round)}
+                      <button
+                        onClick={() => handleToggleLockRound(round)}
+                        className={`p-1 rounded-full transition-colors ${
+                          isRoundLocked ? 'bg-red-600 hover:bg-red-700 text-white' : 'bg-slate-600 hover:bg-slate-500 text-slate-300'
+                        }`}
+                        title={isRoundLocked ? 'Unlock Round' : 'Lock Round'}
+                      >
+                        <Lock className="w-4 h-4" />
+                      </button>
                     </h3>
                     <div className="space-y-6">
                       {roundMatches.map((match) => (
                         <BracketMatchCard
                           key={match.id}
                           match={match}
-                          teams={eligibleTeams} // Use eligibleTeams here
+                          teams={eligibleTeams}
                           onUpdate={(updates) => updateMatch(match.id, updates)}
                           getTeamById={getTeamById}
                         />

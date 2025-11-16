@@ -30,6 +30,7 @@ export interface Tournament {
   end_date: string;
   created_at: string;
   updated_at: string;
+  locked_rounds?: string[]; // Added locked_rounds to Tournament interface
 }
 
 export interface UserData {

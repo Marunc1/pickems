@@ -1,5 +1,5 @@
 import React from 'react';
-import { Trophy } from 'lucide-react';
+import { Trophy, Lock } from 'lucide-react'; // Import Lock icon
 import { type Team } from '../../lib/supabase';
 
 interface BracketMatch {
@@ -18,13 +18,16 @@ interface ViewerBracketMatchCardProps {
   userPick?: string; // The team ID picked by the user for this match
   onPick: (pickedTeamId: string) => void;
   getTeamById: (id?: string) => Team | null;
+  isLocked: boolean; // New prop to indicate if the round is locked
 }
 
-export default function ViewerBracketMatchCard({ match, teams, userPick, onPick, getTeamById }: ViewerBracketMatchCardProps) {
+export default function ViewerBracketMatchCard({ match, teams, userPick, onPick, getTeamById, isLocked }: ViewerBracketMatchCardProps) {
   const team1 = getTeamById(match.team1_id);
   const team2 = getTeamById(match.team2_id);
 
   const handlePick = (teamId: string) => {
+    if (isLocked) return; // Do nothing if the round is locked
+
     // If the same team is clicked again, unselect it
     if (userPick === teamId) {
       onPick(''); // Clear pick
@@ -36,8 +39,8 @@ export default function ViewerBracketMatchCard({ match, teams, userPick, onPick,
   const isTeam1Picked = userPick === match.team1_id;
   const isTeam2Picked = userPick === match.team2_id;
 
-  const isTeam1Selectable = !!match.team1_id;
-  const isTeam2Selectable = !!match.team2_id;
+  const isTeam1Selectable = !!match.team1_id && !isLocked;
+  const isTeam2Selectable = !!match.team2_id && !isLocked;
 
   // Determine if the match is completed and if the pick is correct/incorrect
   const isMatchCompleted = !!match.winner_id;
@@ -113,6 +116,13 @@ export default function ViewerBracketMatchCard({ match, teams, userPick, onPick,
           </div>
         </div>
       </div>
+
+      {isLocked && (
+        <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center rounded-lg z-10">
+          <Lock className="w-8 h-8 text-red-400" />
+          <span className="ml-2 text-red-300 font-bold">Locked</span>
+        </div>
+      )}
 
       {userPick && (
         <div className={`mt-1 pt-1 ${pickStatusBorderClass}`}>
