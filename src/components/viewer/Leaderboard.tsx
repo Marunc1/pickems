@@ -16,12 +16,19 @@ export default function Leaderboard() {
         .from('user_data')
         .select('*')
         .not('picks', 'is', null) // Asigură-te că 'picks' nu este NULL
-        .neq('picks', {})         // Asigură-te că 'picks' nu este un obiect JSON gol
+        // Am eliminat .neq('picks', {}) de aici pentru a testa
         .order('score', { ascending: false })
         .limit(50);
 
       if (error) throw error;
-      setUsers(data || []);
+      
+      // Filtrează obiectele goale în frontend
+      const filteredUsers = (data || []).filter(user => {
+        // Verifică dacă obiectul picks este gol
+        return user.picks && Object.keys(user.picks).length > 0;
+      });
+
+      setUsers(filteredUsers);
     } catch (error) {
       console.error('Error loading leaderboard:', error);
     } finally {
