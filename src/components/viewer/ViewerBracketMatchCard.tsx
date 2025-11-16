@@ -1,5 +1,5 @@
 import React from 'react';
-import { Trophy, CheckCircle, HelpCircle } from 'lucide-react';
+import { Trophy, CheckCircle } from 'lucide-react';
 import { type Team } from '../../lib/supabase';
 
 interface BracketMatch {
@@ -17,7 +17,6 @@ interface ViewerBracketMatchCardProps {
   userPick?: string; // The team ID picked by the user for this match
   onPick: (pickedTeamId: string) => void;
   getTeamById: (id?: string) => Team | null;
-  // Removed isLeftBranch and isFinalMatch as lines are handled by connector
 }
 
 export default function ViewerBracketMatchCard({ match, teams, userPick, onPick, getTeamById }: ViewerBracketMatchCardProps) {
@@ -37,21 +36,21 @@ export default function ViewerBracketMatchCard({ match, teams, userPick, onPick,
   const isTeam2Picked = userPick === match.team2_id;
 
   const isTeam1Selectable = !!match.team1_id;
-  const isTeam2Selectable = !!match.team2_id;
+  const isTeam2Selectable = !!match.team2.id;
 
-  const cardClasses = `bg-slate-800 rounded-lg p-4 w-[12rem] h-[180px] border border-slate-700 shadow-md flex flex-col justify-between relative`; // Changed width to 12rem
+  const cardClasses = `bg-slate-800 rounded-lg p-4 w-[12rem] h-[180px] border border-slate-700 shadow-md flex flex-col justify-between relative`;
 
   return (
     <div className={`${cardClasses}`}>
       <div className="space-y-2 flex-grow">
         <div
-          className={`flex items-center justify-between p-2 rounded-md transition-colors duration-150 ${
+          className={`flex items-center justify-between py-1 px-2 rounded-sm transition-colors duration-150 ${
             isTeam1Selectable ? 'cursor-pointer hover:bg-slate-700' : 'opacity-50 cursor-not-allowed'
           } ${isTeam1Picked ? 'bg-blue-700/40 border border-blue-500' : 'bg-slate-700'}`}
           onClick={() => isTeam1Selectable && handlePick(match.team1_id!)}
         >
           <div className="flex items-center gap-2">
-            {team1?.logo ? <span className="text-xl">{team1.logo}</span> : <div className="w-5 h-5"></div>}
+            {team1?.logo && <span className="text-xl">{team1.logo}</span>}
             <h3 className="text-white font-semibold text-sm">{team1?.name || 'TBD'}</h3>
           </div>
           {isTeam1Picked && <CheckCircle className="w-4 h-4 text-blue-400" />}
@@ -62,13 +61,13 @@ export default function ViewerBracketMatchCard({ match, teams, userPick, onPick,
         </div>
 
         <div
-          className={`flex items-center justify-between p-2 rounded-md transition-colors duration-150 ${
+          className={`flex items-center justify-between py-1 px-2 rounded-sm transition-colors duration-150 ${
             isTeam2Selectable ? 'cursor-pointer hover:bg-slate-700' : 'opacity-50 cursor-not-allowed'
           } ${isTeam2Picked ? 'bg-blue-700/40 border border-blue-500' : 'bg-slate-700'}`}
           onClick={() => isTeam2Selectable && handlePick(match.team2_id!)}
         >
           <div className="flex items-center gap-2">
-            {team2?.logo ? <span className="text-xl">{team2.logo}</span> : <div className="w-5 h-5"></div>}
+            {team2?.logo && <span className="text-xl">{team2.logo}</span>}
             <h3 className="text-white font-semibold text-sm">{team2?.name || 'TBD'}</h3>
           </div>
           {isTeam2Picked && <CheckCircle className="w-4 h-4 text-blue-400" />}
