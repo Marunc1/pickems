@@ -16,7 +16,7 @@ export default function Leaderboard() {
         .from('user_data')
         .select('*')
         .not('picks', 'is', null) // Asigură-te că 'picks' nu este NULL
-        // Am eliminat .neq('picks', {}) de aici pentru a testa
+        .eq('is_admin', false) // Adaugă acest filtru pentru a exclude administratorii
         .order('score', { ascending: false })
         .limit(50);
 
@@ -94,9 +94,7 @@ export default function Leaderboard() {
                         </div>
                         <div>
                           <div className="text-white font-semibold text-lg">{user.username}</div>
-                          {user.is_admin && (
-                            <span className="text-xs text-blue-400 bg-blue-900/30 px-2 py-0.5 rounded-full">Admin</span>
-                          )}
+                          {/* Am eliminat afișarea etichetei "Admin" aici, deoarece administratorii sunt deja filtrați */}
                         </div>
                       </div>
                     </td>
