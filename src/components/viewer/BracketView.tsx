@@ -53,7 +53,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
       case 'quarterfinals': return `mt-[${slotHeight / 2}px]`; // Top of QF column aligns with middle of R16 first match
       case 'semifinals': return `mt-[${slotHeight * 1.5}px]`; // Top of SF column aligns with middle of QF first match
       case 'finals': return `mt-[${slotHeight * 2.5}px]`; // Top of Finals column aligns with middle of SF first match
-      case 'third_place': return `mt-[${slotHeight * 2.5}px]`; // Same as finals for now
+      case 'third_place': return `mt-[${slotHeight / 2}px]`; // Aligns with Quarterfinals
       default: return 'mt-0';
     }
   };
