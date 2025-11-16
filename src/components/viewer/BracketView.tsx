@@ -25,11 +25,15 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
   const matchCardHeight = 80; // from ViewerBracketMatchCard.tsx
   const matchCardWidth = 160; // from ViewerBracketMatchCard.tsx
   const horizontalGap = 20; // Space between round columns
-  const baseVerticalMatchSpacing = 10; // Base vertical space between match cards for higher rounds
+  const baseVerticalMatchSpacing = 20; // Base vertical space between match cards for higher rounds (increased from 10)
 
   function getTeamById(id?: string) {
     if (!id) return null;
     return teams.find((t: Team) => t.id === id);
+  }
+
+  function getRoundMatches(roundName: string) {
+    return bracket.filter(m => m.round === roundName).sort((a, b) => a.match_number - b.match_number);
   }
 
   function getRoundName(round: string) {
@@ -92,7 +96,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
       case 'quarterfinals': level = 2; break;
       case 'round_of_16': 
         level = 3; 
-        effectiveVerticalSpacing = 2; // Smaller spacing for Round of 16
+        effectiveVerticalSpacing = 5; // Smaller spacing for Round of 16 (increased from 2)
         break;
       case 'third_place': return { marginTop: 0, marginBottom: 0, gapBetweenPairedMatches: 0 }; // Special case
     }
