@@ -19,28 +19,28 @@ export async function recalculateAllUserScores() {
 
     const scoringRules = (adminConfigData?.value || {
       correct_pick: 10,
-      perfect_group: 50, // Not used in bracket logic, but kept for consistency
-      correct_winner: 100 // Not used in bracket logic, but kept for consistency
+      perfect_group: 50,
+      correct_winner: 100
     }) as AdminConfig['value'];
     console.log('Scoring Rules:', scoringRules);
 
     // 2. Fetch all active/completed tournaments with their bracket data
     const { data: tournamentsData, error: tournamentsError } = await supabase
       .from('tournament_settings')
-      .select('id, bracket_data, status');
+      .select('id, name, bracket_data, status'); // Added 'name' for better logging
 
     if (tournamentsError) throw tournamentsError;
 
     const relevantTournaments = (tournamentsData || []).filter(
       (t: Tournament) => t.status === 'active' || t.status === 'completed'
     );
-    console.log('Relevant Tournaments:', relevantTournaments.map(t => ({ id: t.id, status: t.status, bracket_data_exists: !!t.bracket_data })));
+    console.log('Relevant Tournaments:', relevantTournaments.map(t => ({ id: t.id, name: t.name, status: t.status, bracket_data_exists: !!t.bracket_data })));
 
 
     // 3. Fetch all user data (including their picks)
     const { data: usersData, error: usersError } = await supabase
       .from('user_data')
-      .select('id, user_id, picks');
+      .select('id, user_id, username, picks');
 
     if (usersError) throw usersError;
 
@@ -51,27 +51,36 @@ export async function recalculateAllUserScores() {
     const updates = users.map(async (user: UserData) => {
       let totalScore = 0;
       const userPicks = user.picks || {};
-      console.log(`Processing user: ${user.username}, current picks:`, userPicks);
+      console.log(`\n--- Processing user: ${user.username} (ID: ${user.user_id}) ---`);
+      console.log(`  User's raw picks object:`, JSON.stringify(userPicks));
 
       for (const tournament of relevantTournaments) {
         const tournamentPicks = userPicks[tournament.id] || {};
         const bracketMatches = (tournament.bracket_data as any)?.matches || [];
-        console.log(`  Tournament: ${tournament.name} (${tournament.id}), bracket matches count: ${bracketMatches.length}`);
-        console.log(`  User picks for this tournament:`, tournamentPicks);
+        console.log(`  Tournament: ${tournament.name} (ID: ${tournament.id}), Status: ${tournament.status}, Bracket matches count: ${bracketMatches.length}`);
+        console.log(`  User picks for this tournament (${tournament.name}):`, JSON.stringify(tournamentPicks));
 
 
         for (const match of bracketMatches) {
           // Only score matches that have a determined winner
           if (match.winner_id) {
-            console.log(`    Match ${match.id}: Winner ID: ${match.winner_id}, User pick: ${tournamentPicks[match.id]}`);
-            if (tournamentPicks[match.id] === match.winner_id) {
+            const userPickedTeamId = tournamentPicks[match.id];
+            const actualWinnerId = match.winner_id;
+            const isCorrectPick = userPickedTeamId === actualWinnerId;
+
+            console.log(`    Match ${match.id} (Round: ${match.round}, Match #: ${match.match_number}):`);
+            console.log(`      Actual Winner ID: ${actualWinnerId}`);
+            console.log(`      User Picked Team ID: ${userPickedTeamId}`);
+            console.log(`      Is Correct Pick? ${isCorrectPick}`);
+
+            if (isCorrectPick) {
               totalScore += scoringRules.correct_pick;
-              console.log(`      Correct pick! Adding ${scoringRules.correct_pick} points. Current total: ${totalScore}`);
+              console.log(`      -> Correct pick! Adding ${scoringRules.correct_pick} points. Current total: ${totalScore}`);
             } else {
-              console.log(`      Incorrect pick or no pick.`);
+              console.log(`      -> Incorrect pick or no pick for this match.`);
             }
           } else {
-            console.log(`    Match ${match.id}: No winner_id yet.`);
+            console.log(`    Match ${match.id} (Round: ${match.round}, Match #: ${match.match_number}): No winner_id yet. Skipping.`);
           }
         }
       }
@@ -83,15 +92,14 @@ export async function recalculateAllUserScores() {
         .eq('user_id', user.user_id);
 
       if (updateError) {
-        console.error(`Error updating score for user ${user.user_id}:`, updateError);
-        // Continue with other users even if one update fails
+        console.error(`Error updating score for user ${user.username} (ID: ${user.user_id}):`, updateError);
       } else {
-        console.log(`Successfully updated score for user ${user.username} to ${totalScore}`);
+        console.log(`\nSuccessfully updated score for user ${user.username} to ${totalScore}`);
       }
     });
 
     await Promise.all(updates);
-    console.log('All user scores recalculated successfully!');
+    console.log('\nAll user scores recalculation process completed!');
 
   } catch (error) {
     console.error('Error during score recalculation:', error);
