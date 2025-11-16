@@ -15,6 +15,7 @@ export default function Leaderboard() {
       const { data, error } = await supabase
         .from('user_data')
         .select('*')
+        .neq('picks', {}) // Filtrează utilizatorii al căror câmp 'picks' este un obiect JSON gol
         .order('score', { ascending: false })
         .limit(50);
 
