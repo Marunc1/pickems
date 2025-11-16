@@ -13,3 +13,8 @@
 }
 
 /* Removed custom override for .py-8 to use default Tailwind spacing */
+
+/* Custom override for .py-12 as requested */
+.py-12 {
+    padding-bottom: 37.7rem;
+}
