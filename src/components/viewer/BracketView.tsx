@@ -1,7 +1,6 @@
 import React from 'react';
 import { type Tournament, type Team } from '../../lib/supabase';
 import ViewerBracketMatchCard from './ViewerBracketMatchCard';
-import BracketRoundConnector from './BracketRoundConnector';
 
 interface BracketMatch {
   id: string;
@@ -21,6 +20,12 @@ interface BracketViewProps {
 export default function BracketView({ tournament, userPicks, onPicksChange }: BracketViewProps) {
   const bracket = (tournament.bracket_data as any)?.matches || [];
   const teams = tournament.teams || [];
+
+  // Constants for layout
+  const matchCardHeight = 80; // from ViewerBracketMatchCard.tsx
+  const matchCardWidth = 160; // from ViewerBracketMatchCard.tsx
+  const horizontalGap = 40; // Space between round columns
+  const verticalMatchSpacing = 20; // Base vertical space between match cards
 
   function getTeamById(id?: string) {
     if (!id) return null;
@@ -50,15 +55,36 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
   if (numTeams > 0) roundsToDisplay.push('finals');
   if (numTeams >= 4) roundsToDisplay.push('third_place');
 
-  // Define constants for match card dimensions and spacing
-  const matchCardHeight = 50; // from ViewerBracketMatchCard.tsx
-  const matchSpacing = 2; // from space-y-0.5 (0.125rem = 2px)
-  const connectorHorizontalLength = 16; // Corresponds to w-4 in BracketRoundConnector
-
   const handlePickChange = (matchId: string, pickedTeamId: string) => {
     const newPicks = { ...userPicks, [matchId]: pickedTeamId };
     onPicksChange(newPicks);
   };
+
+  // Function to get the vertical offset for a match card
+  const getMatchVerticalOffset = (roundName: string, matchIndex: number, totalMatchesInRound: number) => {
+    let level = 0; // 0 for Finals, 1 for Semis, 2 for QF, 3 for R16
+    switch (roundName) {
+      case 'finals': level = 0; break;
+      case 'semifinals': level = 1; break;
+      case 'quarterfinals': level = 2; break;
+      case 'round_of_16': level = 3; break;
+      case 'third_place': return { marginTop: 0, marginBottom: 0 }; // Special case, position below
+    }
+
+    // The total vertical space a match "slot" occupies in the layout
+    const slotHeight = matchCardHeight + (verticalMatchSpacing * (2 ** level - 1));
+
+    // Calculate the margin needed to center the match card within its slot
+    const marginTop = (slotHeight - matchCardHeight) / 2;
+    const marginBottom = marginTop;
+
+    return { marginTop, marginBottom };
+  };
+
+  // Calculate the total height needed for the bracket to center it
+  const maxRoundMatches = Math.max(...roundsToDisplay.map(round => getRoundMatches(round).length));
+  const totalBracketHeight = (matchCardHeight + verticalMatchSpacing * (2 ** (roundsToDisplay.length - 1) - 1)) * maxRoundMatches / 2;
+
 
   return (
     <div className="bg-slate-800 rounded-xl p-6 border border-slate-700 shadow-lg">
@@ -70,48 +96,59 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
       ) : (
         <div className="overflow-x-auto max-h-[700px] overflow-y-auto">
           <div className="w-full flex justify-center">
-            <div className="flex gap-0 min-w-max"> {/* Set gap to 0 here, connectors will manage spacing */}
+            <div className="flex relative" style={{ minHeight: `${totalBracketHeight}px` }}>
               {roundsToDisplay.map((round, roundIndex) => {
                 const roundMatches = getRoundMatches(round);
                 if (roundMatches.length === 0) return null;
 
-                // The connector should start at the vertical center of the first match card.
-                const connectorTopOffset = matchCardHeight / 2; // 25px
-
                 return (
                   <React.Fragment key={round}>
-                    <div className="flex-shrink-0">
+                    <div className="flex flex-col justify-center items-center" style={{ marginRight: `${horizontalGap}px` }}>
                       <h3 className="text-sm font-semibold text-white mb-2 text-center">
                         {getRoundName(round)}
                       </h3>
-                      <div className="space-y-0.5">
-                        {roundMatches.map((match) => (
-                          <ViewerBracketMatchCard
-                            key={match.id}
-                            match={match}
-                            teams={teams}
-                            userPick={userPicks[match.id]}
-                            onPick={(pickedTeamId) => handlePickChange(match.id, pickedTeamId)}
-                            getTeamById={getTeamById}
-                          />
-                        ))}
-                      </div>
+                      {roundMatches.map((match, matchIndex) => {
+                        const { marginTop, marginBottom } = getMatchVerticalOffset(round, matchIndex, roundMatches.length);
+                        return (
+                          <div key={match.id} style={{ marginTop: `${marginTop}px`, marginBottom: `${marginBottom}px` }} className="relative">
+                            <ViewerBracketMatchCard
+                              match={match}
+                              teams={teams}
+                              userPick={userPicks[match.id]}
+                              onPick={(pickedTeamId) => handlePickChange(match.id, pickedTeamId)}
+                              getTeamById={getTeamById}
+                            />
+                            {/* Outgoing horizontal line from match card */}
+                            {roundIndex < roundsToDisplay.length - 1 && (
+                              <div className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-[2px] bg-slate-600"></div>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
-                    {/* Add connectors between rounds, but not after the last round */}
+                    {/* Vertical connecting lines between rounds */}
                     {roundIndex < roundsToDisplay.length - 1 && (
-                      <div 
-                        className="relative flex-shrink-0" 
-                        style={{ 
-                          width: `${connectorHorizontalLength}px`, 
-                          marginTop: `${connectorTopOffset}px`,
-                          marginBottom: `${connectorTopOffset}px` // Balance the top margin
-                        }}
-                      >
-                        {/* For 2 matches connecting to 1, the vertical span is matchCardHeight + matchSpacing */}
-                        <BracketRoundConnector 
-                          verticalSpan={matchCardHeight + matchSpacing} 
-                          horizontalLength={connectorHorizontalLength} 
-                        />
+                      <div className="absolute top-0 bottom-0" style={{ left: `${(roundIndex + 1) * (matchCardWidth + horizontalGap) - horizontalGap / 2}px` }}>
+                        {roundMatches.map((match, matchIndex) => {
+                          const { marginTop: cardMarginTop } = getMatchVerticalOffset(round, matchIndex, roundMatches.length);
+                          const nextRoundMatches = getRoundMatches(roundsToDisplay[roundIndex + 1]);
+                          
+                          // Only draw vertical line if this match is the first of a pair feeding into the next round
+                          if (matchIndex % 2 === 0 && nextRoundMatches.length > 0) {
+                            const startY = cardMarginTop + matchCardHeight / 2;
+                            const endY = cardMarginTop + matchCardHeight + verticalMatchSpacing + matchCardHeight / 2;
+                            const height = endY - startY;
+
+                            return (
+                              <div
+                                key={`v-line-${match.id}`}
+                                className="absolute left-0 bg-slate-600 w-[2px]"
+                                style={{ top: `${startY}px`, height: `${height}px` }}
+                              ></div>
+                            );
+                          }
+                          return null;
+                        })}
                       </div>
                     )}
                   </React.Fragment>
