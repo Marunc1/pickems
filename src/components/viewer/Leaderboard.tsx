@@ -63,7 +63,7 @@ export default function Leaderboard() {
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-6 py-12 flex-grow overflow-auto w-full"> {/* Increased max-w and py */}
+      <div className="max-w-5xl mx-auto px-6 py-6 flex-grow overflow-auto w-full"> {/* Changed py-12 to py-6 */}
         <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden shadow-2xl">
           <div className="overflow-x-auto">
             <table className="w-full">
