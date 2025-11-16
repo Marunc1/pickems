@@ -1,5 +1,5 @@
 import React from 'react';
-import { Trophy, Lock } from 'lucide-react'; // Import Lock icon
+import { Trophy } from 'lucide-react'; // Removed Lock icon import
 import { type Team } from '../../lib/supabase';
 
 interface BracketMatch {
@@ -116,12 +116,6 @@ export default function ViewerBracketMatchCard({ match, teams, userPick, onPick,
           </div>
         </div>
       </div>
-
-      {isLocked && (
-        <div className="absolute bottom-1 right-1 z-10 p-1 bg-slate-800 rounded-full">
-          <Lock className="w-4 h-4 text-red-400" />
-        </div>
-      )}
 
       {userPick && (
         <div className={`mt-1 pt-1 ${pickStatusBorderClass}`}>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { type Tournament, type Team } from '../../lib/supabase';
 import ViewerBracketMatchCard from './ViewerBracketMatchCard';
+import { Lock } from 'lucide-react'; // Import Lock icon
 
 interface BracketMatch {
   id: string;
@@ -132,18 +133,21 @@ export default function BracketView({ tournament, userPicks, onPicksChange, lock
               {allDisplayColumns.map((col, colIndex) => {
                 const roundMatches = col.half ? getMatchesForDisplay(col.roundName, col.half) : getMatchesForDisplay(col.roundName);
                 if (roundMatches.length === 0) return null;
+
+                const isRoundLocked = lockedRounds.includes(col.roundName);
+
                 return (
                   <div
                     key={`${col.roundName}-${col.half || 'full'}`}
                     className="flex flex-col justify-center items-center"
                     style={{ marginRight: colIndex < allDisplayColumns.length - 1 ? `${horizontalGap}px` : '0px' }}
                   >
-                    <h3 className="text-sm font-semibold text-white mb-2 text-center">
+                    <h3 className="text-sm font-semibold text-white mb-2 text-center flex items-center gap-1">
                       {getRoundName(col.roundName)}
+                      {isRoundLocked && <Lock className="w-3 h-3 text-red-400" />}
                     </h3>
                     {roundMatches.map((match: BracketMatch) => { // Cast match to BracketMatch
                       const { marginTop, marginBottom } = getMatchVerticalLayout(col.roundName);
-                      const isMatchLocked = lockedRounds.includes(match.round); // Check if the match's round is locked
                       return (
                         <div key={match.id} style={{ marginTop: `${marginTop}px`, marginBottom: `${marginBottom}px` }} className="relative">
                           <ViewerBracketMatchCard
@@ -152,7 +156,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange, lock
                             userPick={userPicks[match.id]}
                             onPick={(pickedTeamId) => handlePickChange(match.id, pickedTeamId)}
                             getTeamById={getTeamById}
-                            isLocked={isMatchLocked} // Pass the locked status
+                            isLocked={isRoundLocked} // Pass the locked status to disable picking
                           />
                         </div>
                       );
