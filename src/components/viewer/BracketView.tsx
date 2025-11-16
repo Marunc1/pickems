@@ -193,6 +193,27 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
           renderConnectorColumn(2, true, sfMatches.left.length)
         )}
 
+        {/* 3rd Place Match (Moved here, before Finals) */}
+        {hasThirdPlace && thirdPlaceMatches.length > 0 && (
+          <div className={`flex flex-col items-center ${getColumnMarginTop('third_place')}`}>
+            <h3 className="text-xl font-bold text-white mb-6 text-center whitespace-nowrap">
+              {getRoundName('third_place')}
+            </h3>
+            <div className="flex flex-col space-y-8">
+              {thirdPlaceMatches.map((match) => (
+                <ViewerBracketMatchCard
+                  key={match.id}
+                  match={match}
+                  teams={allTeams}
+                  userPick={userPicks[match.id]}
+                  onPick={(pickedTeamId) => onPicksChange({ ...userPicks, [match.id]: pickedTeamId })}
+                  getTeamById={getTeamById}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Middle (Finals) */}
         {hasFinals && finalsMatches.length > 0 && (
           <div className={`flex flex-col items-center ${getColumnMarginTop('finals')}`}>
@@ -269,27 +290,6 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
             </h3>
             <div className="flex flex-col space-y-8">
               {r16Matches.right.map((match) => (
-                <ViewerBracketMatchCard
-                  key={match.id}
-                  match={match}
-                  teams={allTeams}
-                  userPick={userPicks[match.id]}
-                  onPick={(pickedTeamId) => onPicksChange({ ...userPicks, [match.id]: pickedTeamId })}
-                  getTeamById={getTeamById}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* 3rd Place Match (placed at the very end) */}
-        {hasThirdPlace && thirdPlaceMatches.length > 0 && (
-          <div className={`flex flex-col items-center ${getColumnMarginTop('third_place')}`}>
-            <h3 className="text-xl font-bold text-white mt-8 mb-6 text-center whitespace-nowrap">
-              {getRoundName('third_place')}
-            </h3>
-            <div className="flex flex-col space-y-8">
-              {thirdPlaceMatches.map((match) => (
                 <ViewerBracketMatchCard
                   key={match.id}
                   match={match}
