@@ -75,12 +75,16 @@ export default function BracketManager({ tournament, onRefresh, eligibleTeams }:
     setBracket(bracket.map(m => {
       if (m.id === matchId) {
         const updated = { ...m, ...updates };
-        if (updated.team1_score > updated.team2_score && updated.team1_id) {
+        
+        // Logic for determining winner based on score difference of at least 2
+        const scoreDiff = Math.abs(updated.team1_score - updated.team2_score);
+        
+        if (updated.team1_score > updated.team2_score && scoreDiff >= 2 && updated.team1_id) {
           updated.winner_id = updated.team1_id;
-        } else if (updated.team2_score > updated.team1_score && updated.team2_id) {
+        } else if (updated.team2_score > updated.team1_score && scoreDiff >= 2 && updated.team2_id) {
           updated.winner_id = updated.team2_id;
         } else {
-          updated.winner_id = undefined; // Clear winner if scores are equal or invalid
+          updated.winner_id = undefined; // Clear winner if scores are equal or difference is less than 2
         }
         return updated;
       }
