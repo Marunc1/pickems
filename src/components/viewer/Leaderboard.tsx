@@ -82,12 +82,12 @@ export default function Leaderboard() {
                       index < 3 ? 'bg-slate-700/30' : 'bg-slate-800'
                     }`}
                   >
-                    <td className="px-6 py-4 text-center"> {/* Centered rank */}
+                    <td className="px-6 py-2 text-center"> {/* Centered rank, changed py-4 to py-2 */}
                       <div className="flex items-center justify-center w-full">
                         {getRankIcon(index)}
                       </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-2"> {/* Changed py-4 to py-2 */}
                       <div className="flex items-center gap-4"> {/* Increased gap */}
                         <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-md"> {/* Larger avatar */}
                           {user.username.charAt(0).toUpperCase()}
@@ -100,7 +100,7 @@ export default function Leaderboard() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-right">
+                    <td className="px-6 py-2 text-right"> {/* Changed py-4 to py-2 */}
                       <span className="text-white font-bold text-xl">{user.score}</span> {/* Larger score */}
                       <span className="text-slate-400 text-sm ml-1">pts</span>
                     </td>
