@@ -17,11 +17,18 @@ export async function recalculateAllUserScores() {
 
     if (adminConfigError) throw adminConfigError;
 
-    const scoringRules = (adminConfigData?.value || {
-      correct_pick: 10,
-      perfect_group: 50,
-      correct_winner: 100
-    }) as AdminConfig['value'];
+    // Default scoring rules with round-specific points
+    const defaultScoringRules = {
+      round_of_16: 2,
+      quarterfinals: 4,
+      semifinals: 6,
+      third_place: 10,
+      finals: 15,
+      perfect_group: 50, // Keep if still relevant for other pick types
+      correct_winner: 100 // Keep if still relevant for overall winner pick
+    };
+
+    const scoringRules = { ...defaultScoringRules, ...(adminConfigData?.value || {}) } as typeof defaultScoringRules;
     console.log('Scoring Rules:', scoringRules);
 
     // 2. Fetch all active/completed tournaments with their bracket data
@@ -74,8 +81,28 @@ export async function recalculateAllUserScores() {
             console.log(`      Is Correct Pick? ${isCorrectPick}`);
 
             if (isCorrectPick) {
-              totalScore += scoringRules.correct_pick;
-              console.log(`      -> Correct pick! Adding ${scoringRules.correct_pick} points. Current total: ${totalScore}`);
+              let pointsForRound = 0;
+              switch (match.round) {
+                case 'round_of_16':
+                  pointsForRound = scoringRules.round_of_16;
+                  break;
+                case 'quarterfinals':
+                  pointsForRound = scoringRules.quarterfinals;
+                  break;
+                case 'semifinals':
+                  pointsForRound = scoringRules.semifinals;
+                  break;
+                case 'third_place':
+                  pointsForRound = scoringRules.third_place;
+                  break;
+                case 'finals':
+                  pointsForRound = scoringRules.finals;
+                  break;
+                default:
+                  pointsForRound = 0; // No points for unknown rounds
+              }
+              totalScore += pointsForRound;
+              console.log(`      -> Correct pick for ${match.round}! Adding ${pointsForRound} points. Current total: ${totalScore}`);
             } else {
               console.log(`      -> Incorrect pick or no pick for this match.`);
             }

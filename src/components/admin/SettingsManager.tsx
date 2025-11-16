@@ -4,7 +4,11 @@ import { Settings, Save } from 'lucide-react';
 
 export default function SettingsManager() {
   const [scoringRules, setScoringRules] = useState({
-    correct_pick: 10,
+    round_of_16: 2,
+    quarterfinals: 4,
+    semifinals: 6,
+    third_place: 10,
+    finals: 15,
     perfect_group: 50,
     correct_winner: 100
   });
@@ -23,7 +27,7 @@ export default function SettingsManager() {
 
       if (error) throw error;
       if (data && data.value) {
-        setScoringRules(data.value);
+        setScoringRules(prev => ({ ...prev, ...data.value })); // Merge with defaults
       }
     } catch (error) {
       console.error('Error loading scoring rules:', error);
@@ -55,18 +59,69 @@ export default function SettingsManager() {
       </h2>
       <p className="text-slate-400 mb-6">Configure how points are awarded for predictions.</p>
       <div className="space-y-5">
+        {/* New fields for bracket rounds */}
         <div>
-          <label htmlFor="correct-pick" className="block text-slate-300 mb-2 text-lg">Points for Correct Pick</label>
+          <label htmlFor="round-of-16-points" className="block text-slate-300 mb-2 text-lg">Points for Round of 16 Pick</label>
           <input
-            id="correct-pick"
+            id="round-of-16-points"
             type="number"
-            value={scoringRules.correct_pick}
+            value={scoringRules.round_of_16}
             onChange={(e) =>
-              setScoringRules({ ...scoringRules, correct_pick: parseInt(e.target.value) || 0 })
+              setScoringRules({ ...scoringRules, round_of_16: parseInt(e.target.value) || 0 })
             }
             className="px-4 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-white w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
+        <div>
+          <label htmlFor="quarterfinals-points" className="block text-slate-300 mb-2 text-lg">Points for Quarter Finals Pick</label>
+          <input
+            id="quarterfinals-points"
+            type="number"
+            value={scoringRules.quarterfinals}
+            onChange={(e) =>
+              setScoringRules({ ...scoringRules, quarterfinals: parseInt(e.target.value) || 0 })
+            }
+            className="px-4 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-white w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+        <div>
+          <label htmlFor="semifinals-points" className="block text-slate-300 mb-2 text-lg">Points for Semi Finals Pick</label>
+          <input
+            id="semifinals-points"
+            type="number"
+            value={scoringRules.semifinals}
+            onChange={(e) =>
+              setScoringRules({ ...scoringRules, semifinals: parseInt(e.target.value) || 0 })
+            }
+            className="px-4 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-white w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+        <div>
+          <label htmlFor="third-place-points" className="block text-slate-300 mb-2 text-lg">Points for 3rd Place Match Pick</label>
+          <input
+            id="third-place-points"
+            type="number"
+            value={scoringRules.third_place}
+            onChange={(e) =>
+              setScoringRules({ ...scoringRules, third_place: parseInt(e.target.value) || 0 })
+            }
+            className="px-4 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-white w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+        <div>
+          <label htmlFor="finals-points" className="block text-slate-300 mb-2 text-lg">Points for Finals Pick</label>
+          <input
+            id="finals-points"
+            type="number"
+            value={scoringRules.finals}
+            onChange={(e) =>
+              setScoringRules({ ...scoringRules, finals: parseInt(e.target.value) || 0 })
+            }
+            className="px-4 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-white w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        {/* Existing fields (if still needed for other pick types) */}
         <div>
           <label htmlFor="perfect-group" className="block text-slate-300 mb-2 text-lg">Points for Perfect Group Prediction</label>
           <input
