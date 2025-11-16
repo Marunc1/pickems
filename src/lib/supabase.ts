@@ -47,7 +47,14 @@ export interface UserData {
 export interface AdminConfig {
   id: string;
   key: string;
-  value: any;
+  value: {
+    round_of_16: number;
+    quarterfinals: number;
+    semifinals: number;
+    third_place: number;
+    finals: number;
+    // Removed perfect_group and correct_winner from here
+  };
   created_at: string;
   updated_at: string;
 }
