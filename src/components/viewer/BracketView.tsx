@@ -121,7 +121,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
 
   return (
     <div className="overflow-x-auto pb-4">
-      <div className="flex justify-start p-4 gap-x-4"> {/* Removed min-w and adjusted gap-x */}
+      <div className="flex justify-center p-4 gap-x-2"> {/* Changed to justify-center and gap-x-2 */}
 
         {/* Left Side Rounds (R16, QF, SF) */}
         {hasR16 && r16Matches.left.length > 0 && (

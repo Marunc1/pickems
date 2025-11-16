@@ -11,7 +11,7 @@ export default function BracketRoundConnector({
 }: BracketRoundConnectorProps) {
   const lineColor = "bg-slate-600";
   const lineWidth = "w-[2px]";
-  const horizontalLineLength = "w-4"; // Length of the horizontal segment (changed from w-8 to w-4)
+  const horizontalLineLength = "w-2"; // Length of the horizontal segment (changed from w-4 to w-2)
 
   // This connector will span exactly one 'slotHeight' vertically.
   // It connects the center of two matches to the center of one.

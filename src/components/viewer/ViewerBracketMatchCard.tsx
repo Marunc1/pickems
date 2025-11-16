@@ -39,7 +39,7 @@ export default function ViewerBracketMatchCard({ match, teams, userPick, onPick,
   const isTeam1Selectable = !!match.team1_id;
   const isTeam2Selectable = !!match.team2_id;
 
-  const cardClasses = `bg-slate-800 rounded-lg p-4 w-[14rem] h-[180px] border border-slate-700 shadow-md flex flex-col justify-between relative`; // Changed width to 14rem
+  const cardClasses = `bg-slate-800 rounded-lg p-4 w-[12rem] h-[180px] border border-slate-700 shadow-md flex flex-col justify-between relative`; // Changed width to 12rem
 
   return (
     <div className={`${cardClasses}`}>
