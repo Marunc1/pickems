@@ -23,8 +23,8 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
   const allTeams: Team[] = tournament.teams || [];
 
   const matchCardHeight = 180; // Height of ViewerBracketMatchCard
-  const matchCardGap = 32; // From space-y-8
-  const slotHeight = matchCardHeight + matchCardGap; // Total vertical space for one match slot (212px)
+  const matchCardGap = 24; // Reduced from 32 (corresponds to space-y-6)
+  const slotHeight = matchCardHeight + matchCardGap; // Total vertical space for one match slot
 
   function getTeamById(id?: string) {
     if (!id) return null;
@@ -107,7 +107,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
     if (roundIndex === 0) { // R16 -> QF
       connectorColumnMarginTop = matchCardHeight / 2; // Aligns top of connector column with center of first R16 match
     } else if (roundIndex === 1) { // QF -> SF
-      connectorColumnMarginTop = matchCardHeight / 2 + slotHeight; // Aligns top of connector column with center of first QF match
+      connectorColumnColumnMarginTop = matchCardHeight / 2 + slotHeight; // Aligns top of connector column with center of first QF match
     } else if (roundIndex === 2) { // SF -> Finals
       connectorColumnMarginTop = matchCardHeight / 2 + slotHeight * 2; // Aligns top of connector column with center of first SF match
     }
@@ -129,7 +129,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
             <h3 className="text-xl font-bold text-white mb-6 text-center whitespace-nowrap">
               {getRoundName('round_of_16')}
             </h3>
-            <div className="flex flex-col space-y-8">
+            <div className="flex flex-col space-y-6"> {/* Changed from space-y-8 to space-y-6 */}
               {r16Matches.left.map((match) => (
                 <ViewerBracketMatchCard
                   key={match.id}
@@ -152,7 +152,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
             <h3 className="text-xl font-bold text-white mb-6 text-center whitespace-nowrap">
               {getRoundName('quarterfinals')}
             </h3>
-            <div className="flex flex-col space-y-8">
+            <div className="flex flex-col space-y-6"> {/* Changed from space-y-8 to space-y-6 */}
               {qfMatches.left.map((match) => (
                 <ViewerBracketMatchCard
                   key={match.id}
@@ -175,7 +175,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
             <h3 className="text-xl font-bold text-white mb-6 text-center whitespace-nowrap">
               {getRoundName('semifinals')}
             </h3>
-            <div className="flex flex-col space-y-8">
+            <div className="flex flex-col space-y-6"> {/* Changed from space-y-8 to space-y-6 */}
               {sfMatches.left.map((match) => (
                 <ViewerBracketMatchCard
                   key={match.id}
@@ -199,7 +199,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
             <h3 className="text-xl font-bold text-white mb-6 text-center whitespace-nowrap">
               {getRoundName('third_place')}
             </h3>
-            <div className="flex flex-col space-y-8">
+            <div className="flex flex-col space-y-6"> {/* Changed from space-y-8 to space-y-6 */}
               {thirdPlaceMatches.map((match) => (
                 <ViewerBracketMatchCard
                   key={match.id}
@@ -220,7 +220,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
             <h3 className="text-xl font-bold text-white mb-6 text-center whitespace-nowrap">
               {getRoundName('finals')}
             </h3>
-            <div className="flex flex-col space-y-8">
+            <div className="flex flex-col space-y-6"> {/* Changed from space-y-8 to space-y-6 */}
               {finalsMatches.map((match) => (
                 <ViewerBracketMatchCard
                   key={match.id}
@@ -244,7 +244,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
             <h3 className="text-xl font-bold text-white mb-6 text-center whitespace-nowrap">
               {getRoundName('semifinals')}
             </h3>
-            <div className="flex flex-col space-y-8">
+            <div className="flex flex-col space-y-6"> {/* Changed from space-y-8 to space-y-6 */}
               {sfMatches.right.map((match) => (
                 <ViewerBracketMatchCard
                   key={match.id}
@@ -266,7 +266,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
             <h3 className="text-xl font-bold text-white mb-6 text-center whitespace-nowrap">
               {getRoundName('quarterfinals')}
             </h3>
-            <div className="flex flex-col space-y-8">
+            <div className="flex flex-col space-y-6"> {/* Changed from space-y-8 to space-y-6 */}
               {qfMatches.right.map((match) => (
                 <ViewerBracketMatchCard
                   key={match.id}
@@ -288,7 +288,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
             <h3 className="text-xl font-bold text-white mb-6 text-center whitespace-nowrap">
               {getRoundName('round_of_16')}
             </h3>
-            <div className="flex flex-col space-y-8">
+            <div className="flex flex-col space-y-6"> {/* Changed from space-y-8 to space-y-6 */}
               {r16Matches.right.map((match) => (
                 <ViewerBracketMatchCard
                   key={match.id}
