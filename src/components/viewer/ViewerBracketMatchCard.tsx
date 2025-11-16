@@ -91,6 +91,11 @@ export default function ViewerBracketMatchCard({ match, teams, userPick, onPick,
 
   return (
     <div className="w-48 h-20 flex flex-col justify-between relative p-0">
+      {isLocked && (
+        <div className="absolute top-1 right-1 z-10 p-1 bg-slate-800 rounded-full">
+          <Lock className="w-4 h-4 text-red-400" />
+        </div>
+      )}
       <div className="space-y-1 flex-grow">
         <div
           className={team1Classes}
@@ -116,13 +121,6 @@ export default function ViewerBracketMatchCard({ match, teams, userPick, onPick,
           </div>
         </div>
       </div>
-
-      {isLocked && (
-        <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center rounded-lg z-10">
-          <Lock className="w-8 h-8 text-red-400" />
-          <span className="ml-2 text-red-300 font-bold">Locked</span>
-        </div>
-      )}
 
       {userPick && (
         <div className={`mt-1 pt-1 ${pickStatusBorderClass}`}>
