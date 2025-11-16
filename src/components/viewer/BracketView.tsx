@@ -127,10 +127,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
                               onPick={(pickedTeamId) => handlePickChange(match.id, pickedTeamId)}
                               getTeamById={getTeamById}
                             />
-                            {/* Outgoing horizontal line from match card */}
-                            {roundIndex < roundsToDisplay.length - 1 && (
-                              <div className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-[2px] bg-slate-600"></div>
-                            )}
+                            {/* Removed Outgoing horizontal line from match card */}
                           </div>
                         );
                       })}
