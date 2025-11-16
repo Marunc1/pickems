@@ -1,5 +1,5 @@
 import React from 'react';
-import { Trophy, CheckCircle } from 'lucide-react';
+import { Trophy } from 'lucide-react'; // Removed CheckCircle
 import { type Team } from '../../lib/supabase';
 
 interface BracketMatch {
@@ -39,7 +39,7 @@ export default function ViewerBracketMatchCard({ match, teams, userPick, onPick,
   const isTeam2Selectable = !!match.team2_id;
 
   return (
-    <div className="w-48 h-20 flex flex-col justify-between relative p-0"> {/* Changed w-40 to w-48 */}
+    <div className="w-48 h-20 flex flex-col justify-between relative p-0">
       <div className="space-y-1 flex-grow">
         <div
           className={`flex items-center justify-center py-1 px-2 rounded-sm transition-colors duration-150 ${
@@ -51,7 +51,7 @@ export default function ViewerBracketMatchCard({ match, teams, userPick, onPick,
             {team1?.logo && <span className="text-base">{team1.logo}</span>}
             <h3 className="text-xs font-semibold text-white truncate">{team1?.name || 'TBD'}</h3>
           </div>
-          {isTeam1Picked && <CheckCircle className="w-3 h-3 text-blue-400" />}
+          {/* Removed CheckCircle */}
         </div>
 
         <div className="flex justify-center py-0">
@@ -68,7 +68,7 @@ export default function ViewerBracketMatchCard({ match, teams, userPick, onPick,
             {team2?.logo && <span className="text-base">{team2.logo}</span>}
             <h3 className="text-xs font-semibold text-white truncate">{team2?.name || 'TBD'}</h3>
           </div>
-          {isTeam2Picked && <CheckCircle className="w-3 h-3 text-blue-400" />}
+          {/* Removed CheckCircle */}
         </div>
       </div>
 
