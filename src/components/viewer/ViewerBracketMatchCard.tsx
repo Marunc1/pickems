@@ -36,15 +36,16 @@ export default function ViewerBracketMatchCard({ match, teams, userPick, onPick,
   const isTeam2Picked = userPick === match.team2_id;
 
   const isTeam1Selectable = !!match.team1_id;
-  const isTeam2Selectable = !!match.team2_id; // Corrected this line
+  const isTeam2Selectable = !!match.team2_id;
 
-  const cardClasses = `bg-slate-800 rounded-lg p-4 w-[12rem] h-[180px] border border-slate-700 shadow-md flex flex-col justify-between relative`;
+  // Removed bg-slate-800, rounded-lg, border, shadow-md, and adjusted padding
+  const cardClasses = `w-[12rem] h-[180px] flex flex-col justify-between relative p-2`; 
 
   return (
     <div className={`${cardClasses}`}>
       <div className="space-y-2 flex-grow">
         <div
-          className={`flex items-center justify-between py-1 px-2 rounded-sm transition-colors duration-150 ${
+          className={`flex items-center justify-between py-2 px-3 rounded-md transition-colors duration-150 ${ // Adjusted padding
             isTeam1Selectable ? 'cursor-pointer hover:bg-slate-700' : 'opacity-50 cursor-not-allowed'
           } ${isTeam1Picked ? 'bg-blue-700/40 border border-blue-500' : 'bg-slate-700'}`}
           onClick={() => isTeam1Selectable && handlePick(match.team1_id!)}
@@ -61,7 +62,7 @@ export default function ViewerBracketMatchCard({ match, teams, userPick, onPick,
         </div>
 
         <div
-          className={`flex items-center justify-between py-1 px-2 rounded-sm transition-colors duration-150 ${
+          className={`flex items-center justify-between py-2 px-3 rounded-md transition-colors duration-150 ${ // Adjusted padding
             isTeam2Selectable ? 'cursor-pointer hover:bg-slate-700' : 'opacity-50 cursor-not-allowed'
           } ${isTeam2Picked ? 'bg-blue-700/40 border border-blue-500' : 'bg-slate-700'}`}
           onClick={() => isTeam2Selectable && handlePick(match.team2_id!)}
@@ -75,7 +76,7 @@ export default function ViewerBracketMatchCard({ match, teams, userPick, onPick,
       </div>
 
       {userPick && (
-        <div className="mt-2 pt-2 border-t border-slate-700">
+        <div className="mt-2 pt-2 border-t border-slate-600"> {/* Adjusted border color */}
           <div className="flex items-center justify-center gap-2 text-blue-400 font-semibold text-xs">
             <Trophy className="w-3 h-3" />
             Your Pick: {getTeamById(userPick)?.name}
