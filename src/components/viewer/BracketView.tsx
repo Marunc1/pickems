@@ -68,40 +68,42 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
           <p className="text-slate-500 text-sm">Please contact an administrator to set up the bracket.</p>
         </div>
       ) : (
-        <div className="overflow-x-auto max-h-[700px] overflow-y-auto"> {/* Added max-h and overflow-y-auto */}
-          <div className="flex gap-2 min-w-max"> {/* Reduced gap between rounds */}
-            {roundsToDisplay.map((round, roundIndex) => {
-              const roundMatches = getRoundMatches(round);
-              if (roundMatches.length === 0) return null;
+        <div className="overflow-x-auto max-h-[700px] overflow-y-auto">
+          <div className="w-full flex justify-center"> {/* Added wrapper for centering */}
+            <div className="flex gap-2 min-w-max">
+              {roundsToDisplay.map((round, roundIndex) => {
+                const roundMatches = getRoundMatches(round);
+                if (roundMatches.length === 0) return null;
 
-              return (
-                <React.Fragment key={round}>
-                  <div className="flex-shrink-0">
-                    <h3 className="text-sm font-semibold text-white mb-2 text-center"> {/* Reduced title size and margin */}
-                      {getRoundName(round)}
-                    </h3>
-                    <div className="space-y-0.5"> {/* Reduced space-y between matches */}
-                      {roundMatches.map((match) => (
-                        <ViewerBracketMatchCard
-                          key={match.id}
-                          match={match}
-                          teams={teams}
-                          userPick={userPicks[match.id]}
-                          onPick={(pickedTeamId) => handlePickChange(match.id, pickedTeamId)}
-                          getTeamById={getTeamById}
-                        />
-                      ))}
+                return (
+                  <React.Fragment key={round}>
+                    <div className="flex-shrink-0">
+                      <h3 className="text-sm font-semibold text-white mb-2 text-center">
+                        {getRoundName(round)}
+                      </h3>
+                      <div className="space-y-0.5">
+                        {roundMatches.map((match) => (
+                          <ViewerBracketMatchCard
+                            key={match.id}
+                            match={match}
+                            teams={teams}
+                            userPick={userPicks[match.id]}
+                            onPick={(pickedTeamId) => handlePickChange(match.id, pickedTeamId)}
+                            getTeamById={getTeamById}
+                          />
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                  {/* Add connectors between rounds, but not after the last round */}
-                  {roundIndex < roundsToDisplay.length - 1 && (
-                    <div className="flex items-center justify-center">
-                      <BracketRoundConnector isLeftBranch={true} slotHeight={slotHeight} />
-                    </div>
-                  )}
-                </React.Fragment>
-              );
-            })}
+                    {/* Add connectors between rounds, but not after the last round */}
+                    {roundIndex < roundsToDisplay.length - 1 && (
+                      <div className="flex items-center justify-center">
+                        <BracketRoundConnector isLeftBranch={true} slotHeight={slotHeight} />
+                      </div>
+                    )}
+                  </React.Fragment>
+                );
+              })}
+            </div>
           </div>
         </div>
       )}
