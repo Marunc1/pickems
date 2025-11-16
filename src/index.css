@@ -6,3 +6,8 @@
 .min-h-screen {
   min-height: 100vh !important;
 }
+
+/* Custom override for .py-4 as requested */
+.py-4 {
+    padding-bottom: 7.9rem;
+}
