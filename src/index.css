@@ -11,3 +11,8 @@
 .py-4 {
     padding-bottom: 7.9rem;
 }
+
+/* Custom override for .py-8 as requested */
+.py-8 {
+    padding-bottom: 38.9rem;
+}
