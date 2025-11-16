@@ -103,7 +103,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
           <p className="text-slate-500 text-sm">Please contact an administrator to set up the bracket.</p>
         </div>
       ) : (
-        <div className="overflow-x-auto max-h-[700px] overflow-y-auto">
+        <div className="overflow-x-auto">
           <div className="w-full flex justify-center">
             <div className="flex relative" style={{ minHeight: `${totalBracketHeight}px` }}>
               {roundsToDisplay.map((round, roundIndex) => {
