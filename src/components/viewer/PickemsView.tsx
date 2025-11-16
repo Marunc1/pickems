@@ -84,9 +84,10 @@ export default function PickemsView() {
   if (!selectedTournament) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <div className="text-white text-xl">No active tournaments</div>
+        <div className="text-white text-xl">Niciun turneu activ</div>
       </div>
     );
+  ;
   }
 
   // Get picks for the current tournament, or an empty object if none exist
@@ -102,7 +103,6 @@ export default function PickemsView() {
                 <Trophy className="w-10 h-10 text-yellow-500" />
                 {selectedTournament.name}
               </h1>
-              <p className="text-slate-400">Make your predictions and compete with others!</p>
             </div>
             <button
               onClick={savePicks}

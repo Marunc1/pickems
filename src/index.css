@@ -9,7 +9,7 @@
 
 /* Custom override for .py-4 as requested */
 .py-4 {
-    padding-bottom: 7.9rem;
+    padding-bottom: 9.4rem;
 }
 
 /* Removed custom override for .py-8 to use default Tailwind spacing */
