@@ -22,10 +22,10 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
   const teams = tournament.teams || [];
 
   // Constants for layout
-  const matchCardHeight = 100; // Increased from 80
-  const matchCardWidth = 200; // Increased from 160
-  const horizontalGap = 30; // Space between round columns (increased from 20)
-  const baseVerticalMatchSpacing = 15; // Base vertical space between match cards for higher rounds (increased from 10)
+  const matchCardHeight = 80; // from ViewerBracketMatchCard.tsx
+  const matchCardWidth = 160; // from ViewerBracketMatchCard.tsx
+  const horizontalGap = 20; // Space between round columns
+  const baseVerticalMatchSpacing = 10; // Base vertical space between match cards for higher rounds
 
   function getTeamById(id?: string) {
     if (!id) return null;
@@ -92,7 +92,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
       case 'quarterfinals': level = 2; break;
       case 'round_of_16': 
         level = 3; 
-        effectiveVerticalSpacing = 5; // Smaller spacing for Round of 16 (adjusted for new base spacing)
+        effectiveVerticalSpacing = 2; // Smaller spacing for Round of 16
         break;
       case 'third_place': return { marginTop: 0, marginBottom: 0, gapBetweenPairedMatches: 0 }; // Special case
     }
@@ -126,29 +126,30 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
               {allDisplayColumns.map((col, colIndex) => {
                 const roundMatches = col.half ? getMatchesForDisplay(col.roundName, col.half) : getMatchesForDisplay(col.roundName);
                 if (roundMatches.length === 0) return null;
-
                 return (
-                  <React.Fragment key={col.roundName + (col.half || '')}>
-                    <div className="flex flex-col justify-center items-center" style={{ marginRight: colIndex < allDisplayColumns.length - 1 ? `${horizontalGap}px` : '0px' }}>
-                      <h3 className="text-base font-semibold text-white mb-3 text-center"> {/* Increased font size */}
-                        {getRoundName(col.roundName)}
-                      </h3>
-                      {roundMatches.map((match) => {
-                        const { marginTop, marginBottom } = getMatchVerticalLayout(col.roundName);
-                        return (
-                          <div key={match.id} style={{ marginTop: `${marginTop}px`, marginBottom: `${marginBottom}px` }} className="relative">
-                            <ViewerBracketMatchCard
-                              match={match}
-                              teams={teams}
-                              userPick={userPicks[match.id]}
-                              onPick={(pickedTeamId) => handlePickChange(match.id, pickedTeamId)}
-                              getTeamById={getTeamById}
-                            />
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </React.Fragment>
+                  <div
+                    key={`${col.roundName}-${col.half || 'full'}`}
+                    className="flex flex-col justify-center items-center"
+                    style={{ marginRight: colIndex < allDisplayColumns.length - 1 ? `${horizontalGap}px` : '0px' }}
+                  >
+                    <h3 className="text-sm font-semibold text-white mb-2 text-center">
+                      {getRoundName(col.roundName)}
+                    </h3>
+                    {roundMatches.map((match) => {
+                      const { marginTop, marginBottom } = getMatchVerticalLayout(col.roundName);
+                      return (
+                        <div key={match.id} style={{ marginTop: `${marginTop}px`, marginBottom: `${marginBottom}px` }} className="relative">
+                          <ViewerBracketMatchCard
+                            match={match}
+                            teams={teams}
+                            userPick={userPicks[match.id]}
+                            onPick={(pickedTeamId) => handlePickChange(match.id, pickedTeamId)}
+                            getTeamById={getTeamById}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
                 );
               })}
             </div>
