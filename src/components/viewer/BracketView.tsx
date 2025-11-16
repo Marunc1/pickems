@@ -50,9 +50,9 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
   if (numTeams > 0) roundsToDisplay.push('finals');
   if (numTeams >= 4) roundsToDisplay.push('third_place');
 
-  // Calculate slot height for connectors
-  const matchCardHeight = 180; // from ViewerBracketMatchCard.tsx
-  const matchSpacing = 24; // from space-y-6
+  // Calculate slot height for connectors based on new card size and spacing
+  const matchCardHeight = 80; // from ViewerBracketMatchCard.tsx
+  const matchSpacing = 8; // from space-y-2
   const slotHeight = matchCardHeight + matchSpacing; 
 
   const handlePickChange = (matchId: string, pickedTeamId: string) => {
@@ -61,15 +61,15 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
   };
 
   return (
-    <div className="bg-slate-800 rounded-xl p-6 border border-slate-700 shadow-lg"> {/* Applied styling here */}
+    <div className="bg-slate-800 rounded-xl p-6 border border-slate-700 shadow-lg">
       {bracket.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-slate-400 text-lg mb-4">Bracket not initialized for this tournament.</p>
           <p className="text-slate-500 text-sm">Please contact an administrator to set up the bracket.</p>
         </div>
       ) : (
-        <div className="overflow-x-auto">
-          <div className="flex gap-8 min-w-max">
+        <div className="overflow-x-auto max-h-[700px] overflow-y-auto"> {/* Added max-h and overflow-y-auto */}
+          <div className="flex gap-4 min-w-max"> {/* Reduced gap between rounds */}
             {roundsToDisplay.map((round, roundIndex) => {
               const roundMatches = getRoundMatches(round);
               if (roundMatches.length === 0) return null;
@@ -80,7 +80,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
                     <h3 className="text-xl font-bold text-white mb-4 text-center">
                       {getRoundName(round)}
                     </h3>
-                    <div className="space-y-6">
+                    <div className="space-y-2"> {/* Reduced space-y between matches */}
                       {roundMatches.map((match) => (
                         <ViewerBracketMatchCard
                           key={match.id}
