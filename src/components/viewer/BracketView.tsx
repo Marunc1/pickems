@@ -1,7 +1,7 @@
 import React from 'react';
 import { type Tournament, type Team } from '../../lib/supabase';
 import ViewerBracketMatchCard from './ViewerBracketMatchCard';
-import { Lock } from 'lucide-react'; // Import Lock icon
+import { Lock } from 'lucide-react';
 
 interface BracketMatch {
   id: string;
@@ -10,25 +10,25 @@ interface BracketMatch {
   round: string;
   match_number: number;
   next_match_id?: string;
-  winner_id?: string; // Ensure winner_id is part of the interface
+  winner_id?: string;
 }
 
 interface BracketViewProps {
   tournament: Tournament;
   userPicks: { [matchId: string]: string };
-  onPicksChange: (newPicks: { [matchId: string]: string }) => void;
-  lockedRounds: string[]; // New prop for locked rounds
+  onPicksChange: (matchId: string, pickedTeamId: string | null) => void; // Semnătură modificată
+  lockedRounds: string[];
 }
 
 export default function BracketView({ tournament, userPicks, onPicksChange, lockedRounds }: BracketViewProps) {
   const bracket = (tournament.bracket_data as any)?.matches || [];
   const teams = tournament.teams || [];
 
-  // Constants for layout
-  const matchCardHeight = 80; // from ViewerBracketMatchCard.tsx
-  const matchCardWidth = 192; // from ViewerBracketMatchCard.tsx (w-48 = 192px)
-  const horizontalGap = 20; // Space between round columns
-  const baseVerticalMatchSpacing = 30; // Base vertical space between match cards for higher rounds (increased from 20)
+  // Constante pentru layout
+  const matchCardHeight = 80;
+  const matchCardWidth = 192;
+  const horizontalGap = 20;
+  const baseVerticalMatchSpacing = 30;
 
   function getTeamById(id?: string) {
     if (!id) return null;
@@ -50,14 +50,14 @@ export default function BracketView({ tournament, userPicks, onPicksChange, lock
     }
   }
 
-  // Determine main rounds for the bracket structure
+  // Determină rundele principale pentru structura bracket-ului
   const mainRounds = [];
   const numTeams = teams.length;
   if (numTeams > 8) mainRounds.push('round_of_16');
   if (numTeams > 4) mainRounds.push('quarterfinals');
   if (numTeams > 2) mainRounds.push('semifinals');
 
-  // Prepare columns for left, center, and right parts of the bracket
+  // Pregătește coloanele pentru părțile stângă, centrală și dreaptă ale bracket-ului
   const leftColumns: { roundName: string; half: 'left' }[] = mainRounds.map(round => ({ roundName: round, half: 'left' }));
   const rightColumns: { roundName: string; half: 'right' }[] = [...mainRounds].reverse().map(round => ({ roundName: round, half: 'right' }));
 
@@ -69,10 +69,10 @@ export default function BracketView({ tournament, userPicks, onPicksChange, lock
     centerColumns.push({ roundName: 'third_place' });
   }
 
-  // Helper to get matches for a specific round and half
+  // Funcție ajutătoare pentru a obține meciurile pentru o anumită rundă și jumătate
   function getMatchesForDisplay(roundName: string, half?: 'left' | 'right') {
     const allMatches = bracket.filter((m: BracketMatch) => m.round === roundName).sort((a, b) => a.match_number - b.match_number);
-    if (!half) { // No half specified, return all matches (e.g., for finals, third_place)
+    if (!half) {
       return allMatches;
     }
     const midPoint = allMatches.length / 2;
@@ -83,15 +83,15 @@ export default function BracketView({ tournament, userPicks, onPicksChange, lock
     }
   }
 
-  const handlePickChange = (matchId: string, pickedTeamId: string) => {
-    const newPicks = { ...userPicks, [matchId]: pickedTeamId };
-    onPicksChange(newPicks);
+  // Prop-ul onPicksChange este acum transmis direct
+  const handlePickChange = (matchId: string, pickedTeamId: string | null) => {
+    onPicksChange(matchId, pickedTeamId);
   };
 
-  // Function to get the vertical layout properties for a match card within its round
+  // Funcție pentru a obține proprietățile de layout vertical pentru un card de meci în cadrul rundei sale
   const getMatchVerticalLayout = (roundName: string) => {
-    let level = 0; // 0 for Finals, 1 for Semis, 2 for QF, 3 for R16
-    let effectiveVerticalSpacing = baseVerticalMatchSpacing; // Default global spacing
+    let level = 0;
+    let effectiveVerticalSpacing = baseVerticalMatchSpacing;
 
     switch (roundName) {
       case 'finals': level = 0; break;
@@ -99,19 +99,16 @@ export default function BracketView({ tournament, userPicks, onPicksChange, lock
       case 'quarterfinals': level = 2; break;
       case 'round_of_16': 
         level = 3; 
-        effectiveVerticalSpacing = 10; // Smaller spacing for Round of 16 (increased from 5)
+        effectiveVerticalSpacing = 10;
         break;
-      case 'third_place': return { marginTop: 0, marginBottom: 0, gapBetweenPairedMatches: 0 }; // Special case
+      case 'third_place': return { marginTop: 0, marginBottom: 0, gapBetweenPairedMatches: 0 };
     }
 
-    // The total vertical space a match "slot" occupies, including its own height and half the gap above/below
     const totalVerticalSpacePerMatchSlot = matchCardHeight + (effectiveVerticalSpacing * (2 ** level - 1));
     
     const marginTop = (totalVerticalSpacePerMatchSlot - matchCardHeight) / 2;
     const marginBottom = marginTop;
 
-    // The actual gap between two *paired* matches that feed into the next round
-    // This is the space between the bottom of the first card and the top of the second card in a pair
     const gapBetweenPairedMatches = effectiveVerticalSpacing * (2 ** level - 1);
 
     return { marginTop, marginBottom, gapBetweenPairedMatches };
@@ -146,7 +143,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange, lock
                       {getRoundName(col.roundName)}
                       {isRoundLocked && <Lock className="w-3 h-3 text-red-400" />}
                     </h3>
-                    {roundMatches.map((match: BracketMatch) => { // Cast match to BracketMatch
+                    {roundMatches.map((match: BracketMatch) => {
                       const { marginTop, marginBottom } = getMatchVerticalLayout(col.roundName);
                       return (
                         <div key={match.id} style={{ marginTop: `${marginTop}px`, marginBottom: `${marginBottom}px` }} className="relative">
@@ -154,9 +151,9 @@ export default function BracketView({ tournament, userPicks, onPicksChange, lock
                             match={match}
                             teams={teams}
                             userPick={userPicks[match.id]}
-                            onPick={(pickedTeamId) => handlePickChange(match.id, pickedTeamId)}
+                            onPick={handlePickChange} // Transmite noul handler
                             getTeamById={getTeamById}
-                            isLocked={isRoundLocked} // Pass the locked status to disable picking
+                            isLocked={isRoundLocked}
                           />
                         </div>
                       );

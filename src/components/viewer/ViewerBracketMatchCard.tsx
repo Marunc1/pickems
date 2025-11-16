@@ -1,5 +1,5 @@
 import React from 'react';
-import { Trophy } from 'lucide-react'; // Removed Lock icon import
+import { Trophy } from 'lucide-react';
 import { type Team } from '../../lib/supabase';
 
 interface BracketMatch {
@@ -9,16 +9,16 @@ interface BracketMatch {
   round: string;
   match_number: number;
   next_match_id?: string;
-  winner_id?: string; // Added winner_id to BracketMatch interface
+  winner_id?: string;
 }
 
 interface ViewerBracketMatchCardProps {
   match: BracketMatch;
   teams: Team[];
   userPick?: string; // The team ID picked by the user for this match
-  onPick: (pickedTeamId: string) => void;
+  onPick: (matchId: string, pickedTeamId: string | null) => void; // Semnătură modificată
   getTeamById: (id?: string) => Team | null;
-  isLocked: boolean; // New prop to indicate if the round is locked
+  isLocked: boolean;
 }
 
 export default function ViewerBracketMatchCard({ match, teams, userPick, onPick, getTeamById, isLocked }: ViewerBracketMatchCardProps) {
@@ -26,13 +26,13 @@ export default function ViewerBracketMatchCard({ match, teams, userPick, onPick,
   const team2 = getTeamById(match.team2_id);
 
   const handlePick = (teamId: string) => {
-    if (isLocked) return; // Do nothing if the round is locked
+    if (isLocked) return;
 
-    // If the same team is clicked again, unselect it
+    // Dacă aceeași echipă este apăsată din nou, deselecteaz-o
     if (userPick === teamId) {
-      onPick(''); // Clear pick
+      onPick(match.id, null); // Transmite null pentru a șterge alegerea pentru acest meci
     } else {
-      onPick(teamId);
+      onPick(match.id, teamId);
     }
   };
 
@@ -42,12 +42,12 @@ export default function ViewerBracketMatchCard({ match, teams, userPick, onPick,
   const isTeam1Selectable = !!match.team1_id && !isLocked;
   const isTeam2Selectable = !!match.team2_id && !isLocked;
 
-  // Determine if the match is completed and if the pick is correct/incorrect
+  // Determină dacă meciul este finalizat și dacă alegerea este corectă/incorectă
   const isMatchCompleted = !!match.winner_id;
   const isPickCorrect = isMatchCompleted && userPick === match.winner_id;
   const isPickIncorrect = isMatchCompleted && userPick && userPick !== match.winner_id;
 
-  // Conditional classes for team 1
+  // Clase condiționale pentru echipa 1
   const team1Classes = `flex items-center justify-center py-1 px-2 rounded-sm transition-colors duration-150 ${
     isTeam1Selectable ? 'cursor-pointer hover:bg-slate-700' : 'opacity-50 cursor-not-allowed'
   } ${
@@ -56,11 +56,11 @@ export default function ViewerBracketMatchCard({ match, teams, userPick, onPick,
         ? 'bg-green-700/40 border border-green-600'
         : isPickIncorrect
           ? 'bg-red-700/40 border border-red-600'
-          : 'bg-blue-700/40 border border-blue-600' // Default picked color if not completed or no winner
+          : 'bg-blue-700/40 border border-blue-600' // Culoare implicită pentru alegere dacă nu este finalizat sau nu are câștigător
       : 'bg-slate-700'
   }`;
 
-  // Conditional classes for team 2
+  // Clase condiționale pentru echipa 2
   const team2Classes = `flex items-center justify-center py-1 px-2 rounded-sm transition-colors duration-150 ${
     isTeam2Selectable ? 'cursor-pointer hover:bg-slate-700' : 'opacity-50 cursor-not-allowed'
   } ${
@@ -69,11 +69,11 @@ export default function ViewerBracketMatchCard({ match, teams, userPick, onPick,
         ? 'bg-green-700/40 border border-green-600'
         : isPickIncorrect
           ? 'bg-red-700/40 border border-red-600'
-          : 'bg-blue-700/40 border border-blue-600' // Default picked color if not completed or no winner
+          : 'bg-blue-700/40 border border-blue-600' // Culoare implicită pentru alegere dacă nu este finalizat sau nu are câștigător
       : 'bg-slate-700'
   }`;
 
-  // Conditional classes for the "Your Pick" section
+  // Clase condiționale pentru secțiunea "Your Pick"
   const pickStatusBorderClass = `border-t ${
     isPickCorrect
       ? 'border-green-600'
