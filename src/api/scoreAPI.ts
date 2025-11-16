@@ -24,8 +24,7 @@ export async function recalculateAllUserScores() {
       semifinals: 6,
       third_place: 10,
       finals: 15,
-      perfect_group: 50, // Keep if still relevant for other pick types
-      correct_winner: 100 // Keep if still relevant for overall winner pick
+      // Removed perfect_group and correct_winner as they are no longer used for bracket scoring
     };
 
     const scoringRules = { ...defaultScoringRules, ...(adminConfigData?.value || {}) } as typeof defaultScoringRules;

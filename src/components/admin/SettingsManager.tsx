@@ -9,8 +9,7 @@ export default function SettingsManager() {
     semifinals: 6,
     third_place: 10,
     finals: 15,
-    perfect_group: 50,
-    correct_winner: 100
+    // Removed perfect_group and correct_winner from initial state
   });
 
   useEffect(() => {
@@ -27,7 +26,9 @@ export default function SettingsManager() {
 
       if (error) throw error;
       if (data && data.value) {
-        setScoringRules(prev => ({ ...prev, ...data.value })); // Merge with defaults
+        // Filter out perfect_group and correct_winner if they exist in stored data
+        const { perfect_group, correct_winner, ...rest } = data.value;
+        setScoringRules(prev => ({ ...prev, ...rest })); // Merge with defaults, excluding removed fields
       }
     } catch (error) {
       console.error('Error loading scoring rules:', error);
@@ -40,7 +41,7 @@ export default function SettingsManager() {
         .from('admin_config')
         .upsert({
           key: 'scoring_rules',
-          value: scoringRules
+          value: scoringRules // Save only the current state, which excludes removed fields
         }, { onConflict: 'key' }); // Use onConflict to update if key exists
 
       if (error) throw error;
@@ -59,7 +60,7 @@ export default function SettingsManager() {
       </h2>
       <p className="text-slate-400 mb-6">Configure how points are awarded for predictions.</p>
       <div className="space-y-5">
-        {/* New fields for bracket rounds */}
+        {/* Fields for bracket rounds */}
         <div>
           <label htmlFor="round-of-16-points" className="block text-slate-300 mb-2 text-lg">Points for Round of 16 Pick</label>
           <input
@@ -121,31 +122,8 @@ export default function SettingsManager() {
           />
         </div>
 
-        {/* Existing fields (if still needed for other pick types) */}
-        <div>
-          <label htmlFor="perfect-group" className="block text-slate-300 mb-2 text-lg">Points for Perfect Group Prediction</label>
-          <input
-            id="perfect-group"
-            type="number"
-            value={scoringRules.perfect_group}
-            onChange={(e) =>
-              setScoringRules({ ...scoringRules, perfect_group: parseInt(e.target.value) || 0 })
-            }
-            className="px-4 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-white w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-        <div>
-          <label htmlFor="correct-winner" className="block text-slate-300 mb-2 text-lg">Points for Correct Tournament Winner</label>
-          <input
-            id="correct-winner"
-            type="number"
-            value={scoringRules.correct_winner}
-            onChange={(e) =>
-              setScoringRules({ ...scoringRules, correct_winner: parseInt(e.target.value) || 0 })
-            }
-            className="px-4 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-white w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+        {/* Removed existing fields for perfect_group and correct_winner */}
+        
         <button
           onClick={saveSettings}
           className="mt-6 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors font-semibold flex items-center gap-2"
