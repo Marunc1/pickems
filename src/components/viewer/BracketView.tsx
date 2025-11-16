@@ -9,6 +9,7 @@ interface BracketMatch {
   round: string;
   match_number: number;
   next_match_id?: string;
+  winner_id?: string; // Ensure winner_id is part of the interface
 }
 
 interface BracketViewProps {
@@ -33,7 +34,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
   }
 
   function getRoundMatches(roundName: string) {
-    return bracket.filter(m => m.round === roundName).sort((a, b) => a.match_number - b.match_number);
+    return bracket.filter((m: BracketMatch) => m.round === roundName).sort((a, b) => a.match_number - b.match_number);
   }
 
   function getRoundName(round: string) {
@@ -68,7 +69,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
 
   // Helper to get matches for a specific round and half
   function getMatchesForDisplay(roundName: string, half?: 'left' | 'right') {
-    const allMatches = bracket.filter(m => m.round === roundName).sort((a, b) => a.match_number - b.match_number);
+    const allMatches = bracket.filter((m: BracketMatch) => m.round === roundName).sort((a, b) => a.match_number - b.match_number);
     if (!half) { // No half specified, return all matches (e.g., for finals, third_place)
       return allMatches;
     }
@@ -139,7 +140,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
                     <h3 className="text-sm font-semibold text-white mb-2 text-center">
                       {getRoundName(col.roundName)}
                     </h3>
-                    {roundMatches.map((match) => {
+                    {roundMatches.map((match: BracketMatch) => { // Cast match to BracketMatch
                       const { marginTop, marginBottom } = getMatchVerticalLayout(col.roundName);
                       return (
                         <div key={match.id} style={{ marginTop: `${marginTop}px`, marginBottom: `${marginBottom}px` }} className="relative">
