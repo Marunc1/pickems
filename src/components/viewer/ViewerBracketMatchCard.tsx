@@ -42,7 +42,7 @@ export default function ViewerBracketMatchCard({ match, teams, userPick, onPick,
     <div className="w-48 h-20 flex flex-col justify-between relative p-0"> {/* Changed w-40 to w-48 */}
       <div className="space-y-1 flex-grow">
         <div
-          className={`flex items-center justify-between py-1 px-2 rounded-sm transition-colors duration-150 ${
+          className={`flex items-center justify-center py-1 px-2 rounded-sm transition-colors duration-150 ${
             isTeam1Selectable ? 'cursor-pointer hover:bg-slate-700' : 'opacity-50 cursor-not-allowed'
           } ${isTeam1Picked ? 'bg-blue-700/40 border border-blue-600' : 'bg-slate-700'}`}
           onClick={() => isTeam1Selectable && handlePick(match.team1_id!)}
@@ -59,7 +59,7 @@ export default function ViewerBracketMatchCard({ match, teams, userPick, onPick,
         </div>
 
         <div
-          className={`flex items-center justify-between py-1 px-2 rounded-sm transition-colors duration-150 ${
+          className={`flex items-center justify-center py-1 px-2 rounded-sm transition-colors duration-150 ${
             isTeam2Selectable ? 'cursor-pointer hover:bg-slate-700' : 'opacity-50 cursor-not-allowed'
           } ${isTeam2Picked ? 'bg-blue-700/40 border border-blue-600' : 'bg-slate-700'}`}
           onClick={() => isTeam2Selectable && handlePick(match.team2_id!)}
