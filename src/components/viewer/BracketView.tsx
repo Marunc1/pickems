@@ -96,7 +96,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
 
 
   return (
-    <div className="bg-slate-800 rounded-xl p-6 border border-slate-700 shadow-lg">
+    <div className=""> {/* Removed bg-slate-800 rounded-xl p-6 border border-slate-700 shadow-lg */}
       {bracket.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-slate-400 text-lg mb-4">Bracket not initialized for this tournament.</p>
