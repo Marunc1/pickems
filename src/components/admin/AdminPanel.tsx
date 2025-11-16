@@ -28,7 +28,7 @@ export default function AdminPanel() {
   const eligibleTeamsForBracket = tournament?.teams || [];
 
   return (
-    <div className="min-h-screen bg-slate-900">
+    <div className="flex flex-col h-full bg-slate-900"> {/* Changed min-h-screen to flex flex-col h-full */}
       <div className="bg-slate-800 border-b border-slate-700 px-6 py-4">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold text-white flex items-center gap-3">
@@ -51,8 +51,8 @@ export default function AdminPanel() {
         </div>
       </div>
 
-      <div className="flex">
-        <div className="w-64 bg-slate-800 min-h-screen border-r border-slate-700 p-4">
+      <div className="flex flex-grow overflow-auto"> {/* Added flex-grow and overflow-auto */}
+        <div className="w-64 bg-slate-800 h-full border-r border-slate-700 p-4"> {/* Changed min-h-screen to h-full */}
           <nav className="space-y-2">
             <button
               onClick={() => setActiveTab('tournaments')}

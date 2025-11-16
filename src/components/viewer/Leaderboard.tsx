@@ -43,7 +43,7 @@ export default function Leaderboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
+    <div className="flex flex-col h-full bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
       <div className="bg-slate-900/80 backdrop-blur-sm border-b border-slate-700">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <h1 className="text-4xl font-bold text-white flex items-center gap-3">
@@ -54,18 +54,18 @@ export default function Leaderboard() {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-6 py-8">
+      <div className="max-w-4xl mx-auto px-6 py-8 flex-grow overflow-auto"> {/* Added flex-grow and overflow-auto */}
         <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-slate-900">
                 <tr>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-slate-300">Rank</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-slate-300">Player</th>
-                  <th className="px-6 py-4 text-right text-sm font-semibold text-slate-300">Score</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-slate-300 uppercase tracking-wider">Rank</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-slate-300 uppercase tracking-wider">Player</th>
+                  <th className="px-6 py-4 text-right text-sm font-semibold text-slate-300 uppercase tracking-wider">Score</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-700">
+              <tbody className="divide-y divide-slate-600">
                 {users.map((user, index) => (
                   <tr
                     key={user.id}

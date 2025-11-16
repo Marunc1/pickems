@@ -52,7 +52,7 @@ function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white">
+    <div className="flex flex-col h-full bg-slate-900 text-white"> {/* Changed min-h-screen to flex flex-col h-full */}
       <header className="bg-gradient-to-r from-blue-800 to-slate-900 shadow-lg px-8 py-6">
         <h1 className="text-4xl font-extrabold flex items-center gap-4">
           <LayoutDashboard className="w-10 h-10 text-white" />
@@ -61,8 +61,8 @@ function AdminDashboard() {
         <p className="text-blue-200 mt-2 text-lg">Manage your tournament settings and data with ease.</p>
       </header>
 
-      <div className="flex">
-        <aside className="w-72 bg-slate-800 min-h-[calc(100vh-120px)] border-r border-slate-700 p-6 shadow-xl">
+      <div className="flex flex-grow overflow-auto"> {/* Added flex-grow and overflow-auto */}
+        <aside className="w-72 bg-slate-800 h-full border-r border-slate-700 p-6 shadow-xl"> {/* Changed min-h-[calc(100vh-120px)] to h-full */}
           <nav className="space-y-3">
             <Link 
               to="/admin" 

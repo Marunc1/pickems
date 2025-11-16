@@ -44,18 +44,20 @@ function AppContent() {
   const isAdminRoute = location.pathname.startsWith('/admin');
 
   return (
-    <div className="min-h-screen bg-slate-900">
-      {!isAdminRoute && <Navigation />}
-      <Routes>
-        <Route path="/" element={<PickemsView />} />
-        <Route path="/leaderboard" element={<Leaderboard />} />
-        {/* Nested admin routes */}
-        <Route path="/admin" element={<AdminDashboard />}>
-          <Route index element={<AdminPanel />} /> {/* Default child route for /admin */}
-          {/* Am eliminat ruta separată pentru MatchesAdmin */}
-        </Route>
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+    <div className="flex flex-col min-h-screen bg-slate-900"> {/* Main app container, takes full height */}
+      {!isAdminRoute && <Navigation />} {/* Navigation bar, fixed height */}
+      <main className="flex-grow overflow-auto"> {/* Main content area, takes remaining height and allows scrolling */}
+        <Routes>
+          <Route path="/" element={<PickemsView />} />
+          <Route path="/leaderboard" element={<Leaderboard />} />
+          {/* Nested admin routes */}
+          <Route path="/admin" element={<AdminDashboard />}>
+            <Route index element={<AdminPanel />} /> {/* Default child route for /admin */}
+            {/* Am eliminat ruta separată pentru MatchesAdmin */}
+          </Route>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </main>
     </div>
   );
 }
