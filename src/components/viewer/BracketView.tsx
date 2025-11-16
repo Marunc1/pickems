@@ -51,8 +51,8 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
   if (numTeams >= 4) roundsToDisplay.push('third_place');
 
   // Calculate slot height for connectors based on new card size and spacing
-  const matchCardHeight = 60; // from ViewerBracketMatchCard.tsx
-  const matchSpacing = 4; // from space-y-1 (0.25rem = 4px)
+  const matchCardHeight = 50; // from ViewerBracketMatchCard.tsx
+  const matchSpacing = 2; // from space-y-0.5 (0.125rem = 2px)
   const slotHeight = matchCardHeight + matchSpacing; 
 
   const handlePickChange = (matchId: string, pickedTeamId: string) => {
@@ -69,7 +69,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
         </div>
       ) : (
         <div className="overflow-x-auto max-h-[700px] overflow-y-auto"> {/* Added max-h and overflow-y-auto */}
-          <div className="flex gap-3 min-w-max"> {/* Reduced gap between rounds */}
+          <div className="flex gap-2 min-w-max"> {/* Reduced gap between rounds */}
             {roundsToDisplay.map((round, roundIndex) => {
               const roundMatches = getRoundMatches(round);
               if (roundMatches.length === 0) return null;
@@ -77,10 +77,10 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
               return (
                 <React.Fragment key={round}>
                   <div className="flex-shrink-0">
-                    <h3 className="text-xl font-bold text-white mb-4 text-center">
+                    <h3 className="text-sm font-semibold text-white mb-2 text-center"> {/* Reduced title size and margin */}
                       {getRoundName(round)}
                     </h3>
-                    <div className="space-y-1"> {/* Reduced space-y between matches */}
+                    <div className="space-y-0.5"> {/* Reduced space-y between matches */}
                       {roundMatches.map((match) => (
                         <ViewerBracketMatchCard
                           key={match.id}
