@@ -24,8 +24,8 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
   // Constants for layout
   const matchCardHeight = 80; // from ViewerBracketMatchCard.tsx
   const matchCardWidth = 160; // from ViewerBracketMatchCard.tsx
-  const horizontalGap = 40; // Space between round columns
-  const baseVerticalMatchSpacing = 20; // Base vertical space between match cards for higher rounds
+  const horizontalGap = 20; // Space between round columns (reduced from 40)
+  const baseVerticalMatchSpacing = 10; // Base vertical space between match cards for higher rounds (reduced from 20)
 
   function getTeamById(id?: string) {
     if (!id) return null;
@@ -71,7 +71,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
       case 'quarterfinals': level = 2; break;
       case 'round_of_16': 
         level = 3; 
-        effectiveVerticalSpacing = 5; // Smaller spacing for Round of 16
+        effectiveVerticalSpacing = 2; // Smaller spacing for Round of 16 (reduced from 5)
         break;
       case 'third_place': return { marginTop: 0, marginBottom: 0, gapBetweenPairedMatches: 0 }; // Special case
     }
@@ -89,12 +89,6 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
     return { marginTop, marginBottom, gapBetweenPairedMatches };
   };
 
-  // Calculate the total height needed for the bracket to center it
-  // const maxRoundMatches = Math.max(...roundsToDisplay.map(round => getRoundMatches(round).length));
-  // This calculation uses baseVerticalMatchSpacing for overall height estimation
-  // const totalBracketHeight = (matchCardHeight + baseVerticalMatchSpacing * (2 ** (roundsToDisplay.length - 1) - 1)) * maxRoundMatches / 2;
-
-
   return (
     <div className="">
       {bracket.length === 0 ? (
@@ -105,7 +99,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
       ) : (
         <div className="overflow-x-auto">
           <div className="w-full flex justify-center">
-            <div className="flex relative"> {/* Removed minHeight style */}
+            <div className="flex relative">
               {roundsToDisplay.map((round, roundIndex) => {
                 const roundMatches = getRoundMatches(round);
                 if (roundMatches.length === 0) return null;
