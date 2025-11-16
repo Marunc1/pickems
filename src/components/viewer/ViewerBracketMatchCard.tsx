@@ -39,48 +39,47 @@ export default function ViewerBracketMatchCard({ match, teams, userPick, onPick,
   const isTeam2Selectable = !!match.team2_id;
 
   return (
-    <div className="w-40 h-20 flex flex-col justify-between relative p-0">
+    <div className="w-50 h-25 flex flex-col justify-between relative p-0"> {/* Increased size from w-40 h-20 */}
       <div className="space-y-1 flex-grow">
         <div
-          className={`flex items-center justify-between py-1 px-2 rounded-sm transition-colors duration-150 ${
+          className={`flex items-center justify-between py-2 px-3 rounded-sm transition-colors duration-150 ${ /* Increased padding */
             isTeam1Selectable ? 'cursor-pointer hover:bg-slate-700' : 'opacity-50 cursor-not-allowed'
           } ${isTeam1Picked ? 'bg-blue-700/40 border border-blue-600' : 'bg-slate-700'}`}
           onClick={() => isTeam1Selectable && handlePick(match.team1_id!)}
         >
-          <div className="flex items-center gap-1">
-            {team1?.logo && <span className="text-base">{team1.logo}</span>}
-            <h3 className="text-xs font-semibold text-white truncate">{team1?.name || 'TBD'}</h3>
+          <div className="flex items-center gap-2"> {/* Increased gap */}
+            {team1?.logo && <span className="text-lg">{team1.logo}</span>} {/* Increased text size */}
+            <h3 className="text-sm font-semibold text-white truncate">{team1?.name || 'TBD'}</h3> {/* Increased text size */}
           </div>
-          {isTeam1Picked && <CheckCircle className="w-3 h-3 text-blue-400" />}
+          {isTeam1Picked && <CheckCircle className="w-4 h-4 text-blue-400" />} {/* Increased icon size */}
         </div>
 
         <div className="flex justify-center py-0">
-          <span className="text-xs font-semibold text-slate-400">VS</span>
+          <span className="text-sm font-semibold text-slate-400">VS</span> {/* Increased text size */}
         </div>
 
         <div
-          className={`flex items-center justify-between py-1 px-2 rounded-sm transition-colors duration-150 ${
+          className={`flex items-center justify-between py-2 px-3 rounded-sm transition-colors duration-150 ${ /* Increased padding */
             isTeam2Selectable ? 'cursor-pointer hover:bg-slate-700' : 'opacity-50 cursor-not-allowed'
           } ${isTeam2Picked ? 'bg-blue-700/40 border border-blue-600' : 'bg-slate-700'}`}
           onClick={() => isTeam2Selectable && handlePick(match.team2_id!)}
         >
-          <div className="flex items-center gap-1">
-            {team2?.logo && <span className="text-base">{team2.logo}</span>}
-            <h3 className="text-xs font-semibold text-white truncate">{team2?.name || 'TBD'}</h3>
+          <div className="flex items-center gap-2"> {/* Increased gap */}
+            {team2?.logo && <span className="text-lg">{team2.logo}</span>} {/* Increased text size */}
+            <h3 className="text-sm font-semibold text-white truncate">{team2?.name || 'TBD'}</h3> {/* Increased text size */}
           </div>
-          {isTeam2Picked && <CheckCircle className="w-3 h-3 text-blue-400" />}
+          {isTeam2Picked && <CheckCircle className="w-4 h-4 text-blue-400" />} {/* Increased icon size */}
         </div>
       </div>
 
       {userPick && (
-        <div className="mt-1 pt-1 border-t border-slate-600">
-          <div className="flex items-center justify-center gap-1 text-xs font-semibold text-blue-400">
-            <Trophy className="w-3 h-3" />
+        <div className="mt-2 pt-2 border-t border-slate-600"> {/* Increased margin/padding */}
+          <div className="flex items-center justify-center gap-1 text-sm font-semibold text-blue-400"> {/* Increased text size */}
+            <Trophy className="w-4 h-4" /> {/* Increased icon size */}
             Your Pick: {getTeamById(userPick)?.name}
           </div>
         </div>
       )}
-      {/* Outgoing horizontal line - will be handled by BracketView for dynamic positioning */}
     </div>
   );
 }
