@@ -90,9 +90,9 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
   };
 
   // Calculate the total height needed for the bracket to center it
-  const maxRoundMatches = Math.max(...roundsToDisplay.map(round => getRoundMatches(round).length));
+  // const maxRoundMatches = Math.max(...roundsToDisplay.map(round => getRoundMatches(round).length));
   // This calculation uses baseVerticalMatchSpacing for overall height estimation
-  const totalBracketHeight = (matchCardHeight + baseVerticalMatchSpacing * (2 ** (roundsToDisplay.length - 1) - 1)) * maxRoundMatches / 2;
+  // const totalBracketHeight = (matchCardHeight + baseVerticalMatchSpacing * (2 ** (roundsToDisplay.length - 1) - 1)) * maxRoundMatches / 2;
 
 
   return (
@@ -105,7 +105,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
       ) : (
         <div className="overflow-x-auto">
           <div className="w-full flex justify-center">
-            <div className="flex relative" style={{ minHeight: `${totalBracketHeight}px` }}>
+            <div className="flex relative"> {/* Removed minHeight style */}
               {roundsToDisplay.map((round, roundIndex) => {
                 const roundMatches = getRoundMatches(round);
                 if (roundMatches.length === 0) return null;
@@ -127,13 +127,10 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
                               onPick={(pickedTeamId) => handlePickChange(match.id, pickedTeamId)}
                               getTeamById={getTeamById}
                             />
-                            {/* Removed Outgoing horizontal line from match card */}
                           </div>
                         );
                       })}
                     </div>
-                    {/* Vertical connecting lines between rounds */}
-                    {/* Removed the vertical connecting lines as requested */}
                   </React.Fragment>
                 );
               })}
