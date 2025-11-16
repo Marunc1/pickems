@@ -28,10 +28,10 @@ export default function Leaderboard() {
   }
 
   function getRankIcon(index: number) {
-    if (index === 0) return <Trophy className="w-6 h-6 text-yellow-500" />;
-    if (index === 1) return <Medal className="w-6 h-6 text-slate-400" />;
-    if (index === 2) return <Medal className="w-6 h-6 text-orange-600" />;
-    return <span className="text-slate-400 font-bold">{index + 1}</span>;
+    if (index === 0) return <Trophy className="w-7 h-7 text-yellow-400" />;
+    if (index === 1) return <Medal className="w-7 h-7 text-slate-300" />;
+    if (index === 2) return <Medal className="w-7 h-7 text-orange-500" />;
+    return <span className="text-slate-400 font-bold text-lg">{index + 1}</span>;
   }
 
   if (loading) {
@@ -54,45 +54,45 @@ export default function Leaderboard() {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-6 py-8 flex-grow overflow-auto"> {/* Added flex-grow and overflow-auto */}
-        <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
+      <div className="max-w-5xl mx-auto px-6 py-12 flex-grow overflow-auto w-full"> {/* Increased max-w and py */}
+        <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden shadow-2xl">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-slate-900">
                 <tr>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-slate-300 uppercase tracking-wider">Rank</th>
+                  <th className="px-6 py-4 text-center text-sm font-semibold text-slate-300 uppercase tracking-wider w-20">Rank</th> {/* Adjusted width */}
                   <th className="px-6 py-4 text-left text-sm font-semibold text-slate-300 uppercase tracking-wider">Player</th>
-                  <th className="px-6 py-4 text-right text-sm font-semibold text-slate-300 uppercase tracking-wider">Score</th>
+                  <th className="px-6 py-4 text-right text-sm font-semibold text-slate-300 uppercase tracking-wider w-32">Score</th> {/* Adjusted width */}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-600">
                 {users.map((user, index) => (
                   <tr
                     key={user.id}
-                    className={`hover:bg-slate-700/50 transition-colors ${
-                      index < 3 ? 'bg-slate-700/30' : ''
+                    className={`hover:bg-slate-700/50 transition-colors duration-200 ${
+                      index < 3 ? 'bg-slate-700/30' : 'bg-slate-800'
                     }`}
                   >
-                    <td className="px-6 py-4">
-                      <div className="flex items-center justify-center w-8">
+                    <td className="px-6 py-4 text-center"> {/* Centered rank */}
+                      <div className="flex items-center justify-center w-full">
                         {getRankIcon(index)}
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold">
+                      <div className="flex items-center gap-4"> {/* Increased gap */}
+                        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-md"> {/* Larger avatar */}
                           {user.username.charAt(0).toUpperCase()}
                         </div>
                         <div>
-                          <div className="text-white font-semibold">{user.username}</div>
+                          <div className="text-white font-semibold text-lg">{user.username}</div> {/* Larger text */}
                           {user.is_admin && (
-                            <span className="text-xs text-blue-400">Admin</span>
+                            <span className="text-xs text-blue-400 bg-blue-900/30 px-2 py-0.5 rounded-full">Admin</span>
                           )}
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <span className="text-white font-bold text-lg">{user.score}</span>
+                      <span className="text-white font-bold text-xl">{user.score}</span> {/* Larger score */}
                       <span className="text-slate-400 text-sm ml-1">pts</span>
                     </td>
                   </tr>
