@@ -76,13 +76,13 @@ export default function BracketManager({ tournament, onRefresh, eligibleTeams }:
       if (m.id === matchId) {
         const updated = { ...m, ...updates };
         
-        // Logic for determining winner: higher score wins
-        if (updated.team1_score > updated.team2_score && updated.team1_id) {
+        // Logic for determining winner: first to 2 wins (rounds won)
+        if (updated.team1_score >= 2 && updated.team1_score > updated.team2_score && updated.team1_id) {
           updated.winner_id = updated.team1_id;
-        } else if (updated.team2_score > updated.team1_score && updated.team2_id) {
+        } else if (updated.team2_score >= 2 && updated.team2_score > updated.team1_score && updated.team2_id) {
           updated.winner_id = updated.team2_id;
         } else {
-          updated.winner_id = undefined; // Clear winner if scores are equal
+          updated.winner_id = undefined; // Clear winner if neither team has 2 wins or scores are tied
         }
         return updated;
       }
