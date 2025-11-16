@@ -24,16 +24,12 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
   // Constants for layout
   const matchCardHeight = 80; // from ViewerBracketMatchCard.tsx
   const matchCardWidth = 160; // from ViewerBracketMatchCard.tsx
-  const horizontalGap = 20; // Space between round columns (reduced from 40)
-  const baseVerticalMatchSpacing = 10; // Base vertical space between match cards for higher rounds (reduced from 20)
+  const horizontalGap = 20; // Space between round columns
+  const baseVerticalMatchSpacing = 10; // Base vertical space between match cards for higher rounds
 
   function getTeamById(id?: string) {
     if (!id) return null;
     return teams.find((t: Team) => t.id === id);
-  }
-
-  function getRoundMatches(roundName: string) {
-    return bracket.filter(m => m.round === roundName).sort((a, b) => a.match_number - b.match_number);
   }
 
   function getRoundName(round: string) {
@@ -47,13 +43,38 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
     }
   }
 
-  const roundsToDisplay = [];
+  // Determine main rounds for the bracket structure
+  const mainRounds = [];
   const numTeams = teams.length;
-  if (numTeams > 8) roundsToDisplay.push('round_of_16');
-  if (numTeams > 4) roundsToDisplay.push('quarterfinals');
-  if (numTeams > 2) roundsToDisplay.push('semifinals');
-  if (numTeams > 0) roundsToDisplay.push('finals');
-  if (numTeams >= 4) roundsToDisplay.push('third_place');
+  if (numTeams > 8) mainRounds.push('round_of_16');
+  if (numTeams > 4) mainRounds.push('quarterfinals');
+  if (numTeams > 2) mainRounds.push('semifinals');
+
+  // Prepare columns for left, center, and right parts of the bracket
+  const leftColumns: { roundName: string; half: 'left' }[] = mainRounds.map(round => ({ roundName: round, half: 'left' }));
+  const rightColumns: { roundName: string; half: 'right' }[] = [...mainRounds].reverse().map(round => ({ roundName: round, half: 'right' }));
+
+  const centerColumns: { roundName: string; half?: undefined }[] = [];
+  if (numTeams > 0) {
+    centerColumns.push({ roundName: 'finals' });
+  }
+  if (numTeams >= 4) {
+    centerColumns.push({ roundName: 'third_place' });
+  }
+
+  // Helper to get matches for a specific round and half
+  function getMatchesForDisplay(roundName: string, half?: 'left' | 'right') {
+    const allMatches = bracket.filter(m => m.round === roundName).sort((a, b) => a.match_number - b.match_number);
+    if (!half) { // No half specified, return all matches (e.g., for finals, third_place)
+      return allMatches;
+    }
+    const midPoint = allMatches.length / 2;
+    if (half === 'left') {
+      return allMatches.slice(0, midPoint);
+    } else {
+      return allMatches.slice(midPoint);
+    }
+  }
 
   const handlePickChange = (matchId: string, pickedTeamId: string) => {
     const newPicks = { ...userPicks, [matchId]: pickedTeamId };
@@ -71,7 +92,7 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
       case 'quarterfinals': level = 2; break;
       case 'round_of_16': 
         level = 3; 
-        effectiveVerticalSpacing = 2; // Smaller spacing for Round of 16 (reduced from 5)
+        effectiveVerticalSpacing = 2; // Smaller spacing for Round of 16
         break;
       case 'third_place': return { marginTop: 0, marginBottom: 0, gapBetweenPairedMatches: 0 }; // Special case
     }
@@ -89,6 +110,8 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
     return { marginTop, marginBottom, gapBetweenPairedMatches };
   };
 
+  const allDisplayColumns = [...leftColumns, ...centerColumns, ...rightColumns];
+
   return (
     <div className="">
       {bracket.length === 0 ? (
@@ -100,32 +123,33 @@ export default function BracketView({ tournament, userPicks, onPicksChange }: Br
         <div className="overflow-x-auto">
           <div className="w-full flex justify-center">
             <div className="flex relative">
-              {roundsToDisplay.map((round, roundIndex) => {
-                const roundMatches = getRoundMatches(round);
+              {allDisplayColumns.map((col, colIndex) => {
+                const roundMatches = col.half ? getMatchesForDisplay(col.roundName, col.half) : getMatchesForDisplay(col.roundName);
                 if (roundMatches.length === 0) return null;
-
                 return (
-                  <React.Fragment key={round}>
-                    <div className="flex flex-col justify-center items-center" style={{ marginRight: `${horizontalGap}px` }}>
-                      <h3 className="text-sm font-semibold text-white mb-2 text-center">
-                        {getRoundName(round)}
-                      </h3>
-                      {roundMatches.map((match, matchIndex) => {
-                        const { marginTop, marginBottom } = getMatchVerticalLayout(round);
-                        return (
-                          <div key={match.id} style={{ marginTop: `${marginTop}px`, marginBottom: `${marginBottom}px` }} className="relative">
-                            <ViewerBracketMatchCard
-                              match={match}
-                              teams={teams}
-                              userPick={userPicks[match.id]}
-                              onPick={(pickedTeamId) => handlePickChange(match.id, pickedTeamId)}
-                              getTeamById={getTeamById}
-                            />
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </React.Fragment>
+                  <div
+                    key={`${col.roundName}-${col.half || 'full'}`}
+                    className="flex flex-col justify-center items-center"
+                    style={{ marginRight: colIndex < allDisplayColumns.length - 1 ? `${horizontalGap}px` : '0px' }}
+                  >
+                    <h3 className="text-sm font-semibold text-white mb-2 text-center">
+                      {getRoundName(col.roundName)}
+                    </h3>
+                    {roundMatches.map((match) => {
+                      const { marginTop, marginBottom } = getMatchVerticalLayout(col.roundName);
+                      return (
+                        <div key={match.id} style={{ marginTop: `${marginTop}px`, marginBottom: `${marginBottom}px` }} className="relative">
+                          <ViewerBracketMatchCard
+                            match={match}
+                            teams={teams}
+                            userPick={userPicks[match.id]}
+                            onPick={(pickedTeamId) => handlePickChange(match.id, pickedTeamId)}
+                            getTeamById={getTeamById}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
                 );
               })}
             </div>
