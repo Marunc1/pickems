@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase, type Tournament, type Team } from '../../lib/supabase';
 import { Save, Trophy, ArrowRight } from 'lucide-react';
+import { recalculateAllUserScores } from '../../api/scoreAPI'; // Import the new function
 
 interface BracketMatch {
   id: string;
@@ -98,11 +99,15 @@ export default function BracketManager({ tournament, onRefresh, eligibleTeams }:
         .eq('id', tournament.id);
 
       if (error) throw error;
+      
+      // Recalculate all user scores after bracket is saved
+      await recalculateAllUserScores();
+
       onRefresh();
-      alert('Bracket saved successfully!');
+      alert('Bracket saved successfully and scores recalculated!');
     } catch (error) {
-      console.error('Error saving bracket:', error);
-      alert('Error saving bracket');
+      console.error('Error saving bracket or recalculating scores:', error);
+      alert('Error saving bracket or recalculating scores');
     }
   }
 
